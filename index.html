@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>صيدليتي - منصة طلب الأدوية من الصيدليات القريبة</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+        body { background: linear-gradient(135deg, #0f2b3d 0%, #1b8c5e 50%, #0f2b3d 100%); min-height: 100vh; }
+        .navbar { background: rgba(26, 37, 47, 0.95); backdrop-filter: blur(10px); color: white; padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 1.5rem; font-weight: 800; background: linear-gradient(135deg, #1abc9c, #2ecc71); -webkit-background-clip: text; -webkit-text-fill-color: transparent; cursor: pointer; }
+        .logo i { background: none; -webkit-text-fill-color: #2ecc71; margin-left: 8px; }
+        .menu-btn { background: linear-gradient(135deg, #1abc9c, #2ecc71); border: none; color: white; font-size: 1.3rem; cursor: pointer; padding: 8px 12px; border-radius: 10px; transition: 0.3s; }
+        .menu-btn:hover { transform: scale(1.05); }
+        .sidebar { position: fixed; top: 0; right: -100%; width: 100%; max-width: 320px; height: 100%; background: linear-gradient(180deg, #1a252f 0%, #0f2b3d 100%); color: white; transition: right 0.5s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1100; overflow-y: auto; }
+        .sidebar.open { right: 0; }
+        .sidebar .user-info { padding: 30px 20px; text-align: center; border-bottom: 2px solid rgba(46, 204, 113, 0.3); }
+        .sidebar .user-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1abc9c, #2ecc71); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; overflow: hidden; }
+        .sidebar .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .sidebar .user-avatar i { font-size: 3rem; color: white; }
+        .sidebar a { display: block; padding: 12px 20px; color: white; text-decoration: none; transition: 0.3s; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .sidebar a i { margin-left: 12px; width: 25px; }
+        .sidebar a:hover { background: linear-gradient(90deg, #1abc9c, #2ecc71); padding-right: 30px; }
+        .close-sidebar { position: absolute; top: 15px; left: 15px; cursor: pointer; background: rgba(255,255,255,0.1); padding: 6px 10px; border-radius: 8px; transition: 0.3s; }
+        .close-sidebar:hover { background: rgba(26, 188, 156, 0.3); }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1050; display: none; transition: 0.3s; }
+        .overlay.show { display: block; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
+        .card { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: all 0.3s; cursor: pointer; text-align: center; backdrop-filter: blur(5px); }
+        .card:hover { transform: translateY(-8px); box-shadow: 0 20px 40px rgba(0,0,0,0.2); background: white; }
+        .card-avatar { width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #1abc9c, #2ecc71); display: flex; align-items: center; justify-content: center; margin: 0 auto 15px; overflow: hidden; cursor: pointer; }
+        .card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .card-avatar i { font-size: 2.5rem; color: white; }
+        .card h3 { color: #2c3e50; margin-bottom: 8px; cursor: pointer; }
+        .card h3:hover { color: #1abc9c; }
+        .rating { color: #f39c12; margin: 8px 0; font-weight: 600; }
+        .badge { background: linear-gradient(135deg, #1abc9c, #2ecc71); color: white; padding: 5px 15px; border-radius: 20px; font-size: 0.75rem; display: inline-block; }
+        .location-badge { background: linear-gradient(135deg, #3498db, #2980b9); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.7rem; display: inline-block; margin-top: 5px; }
+        .profile-info { background: rgba(255, 255, 255, 0.95); border-radius: 20px; padding: 1.5rem; margin-top: 1rem; box-shadow: 0 10px 30px rgba(0,0,0,0.1); backdrop-filter: blur(5px); }
+        .profile-header { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 2px solid #eee; }
+        .profile-avatar { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #1abc9c, #2ecc71); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; position: relative; }
+        .profile-avatar:hover .avatar-overlay { opacity: 1; }
+        .avatar-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.3s; border-radius: 50%; }
+        .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-avatar i { font-size: 3rem; color: white; }
+        .input-group { margin-bottom: 1.2rem; position: relative; }
+        .input-group i:not(.toggle-password) { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: #95a5a6; }
+        .password-wrapper { position: relative; width: 100%; }
+        .password-wrapper input { width: 100%; padding: 12px 40px 12px 40px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 0.9rem; background: #fafafa; }
+        .password-wrapper input:focus { outline: none; border-color: #1abc9c; background: white; }
+        .toggle-password { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #95a5a6; transition: color 0.2s; }
+        .toggle-password:hover { color: #1abc9c; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; padding: 12px 40px 12px 12px; border: 2px solid #e0e0e0; border-radius: 12px; font-size: 0.9rem; background: #fafafa; transition: 0.3s; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { outline: none; border-color: #1abc9c; background: white; }
+        .whatsapp-wrapper { display: flex; gap: 10px; align-items: center; direction: ltr; }
+        .whatsapp-wrapper select { width: 120px; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px; background: #fafafa; cursor: pointer; }
+        .whatsapp-wrapper input { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px; background: #fafafa; }
+        button { background: linear-gradient(135deg, #1abc9c, #2ecc71); color: white; border: none; padding: 8px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; margin: 4px; transition: 0.3s; }
+        button:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(26, 188, 156, 0.3); }
+        .delete-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .accept-btn { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .reject-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .call-btn { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1200; justify-content: center; align-items: center; padding: 1rem; }
+        .modal-content { background: white; border-radius: 25px; padding: 2rem; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; animation: modalFadeIn 0.3s ease; }
+        @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        .modal-buttons { display: flex; gap: 1rem; justify-content: center; margin-top: 1rem; }
+        .image-preview { width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem; overflow: hidden; border: 3px solid #1abc9c; }
+        .image-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .file-input { display: none; }
+        .upload-btn { background: linear-gradient(135deg, #3498db, #2980b9); padding: 10px 20px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 10px 0; }
+        .sweet-message { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 20px; padding: 1.5rem 2rem; text-align: center; z-index: 1300; animation: sweetFadeIn 0.3s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        @keyframes sweetFadeIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+        .flex-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .back-button { background: rgba(255,255,255,0.2); color: white; padding: 8px 20px; border-radius: 30px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; margin-bottom: 1rem; transition: 0.3s; }
+        .back-button:hover { background: rgba(255,255,255,0.3); transform: translateX(-5px); }
+        .notification-bell { position: relative; cursor: pointer; margin-left: 12px; }
+        .notification-bell i { font-size: 1.3rem; transition: 0.3s; }
+        .notification-bell i:hover { color: #1abc9c; }
+        .notification-badge { position: absolute; top: -8px; left: -8px; background: #e74c3c; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.6rem; }
+        .request-item, .comment-item { background: #f8f9fa; border-radius: 15px; padding: 1rem; margin-bottom: 1rem; border-right: 4px solid #1abc9c; transition: 0.3s; }
+        .request-item:hover, .comment-item:hover { transform: translateX(-3px); box-shadow: 0 3px 10px rgba(0,0,0,0.05); }
+        .section-title { margin: 1rem 0 0.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #1abc9c; color: #2c3e50; }
+        .auth-wrapper { display: flex; justify-content: center; align-items: center; min-height: calc(100vh - 70px); padding: 1rem; }
+        .auth-card { background: rgba(255, 255, 255, 0.98); border-radius: 24px; padding: 2rem; max-width: 500px; width: 100%; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .location-group { background: #f0f7ff; border-radius: 15px; padding: 10px; margin-bottom: 15px; border: 1px solid #d4e6f1; }
+        .location-group label { display: block; margin-bottom: 5px; color: #2c3e50; font-weight: 600; font-size: 0.9rem; }
+        .location-select { width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 12px; background: white; cursor: pointer; }
+        .remember-me { display: flex; align-items: center; justify-content: flex-end; margin: 0.8rem 0 1.2rem; gap: 8px; cursor: pointer; }
+        .remember-me input { width: 18px; height: 18px; cursor: pointer; margin: 0; }
+        .remember-me label { color: #2c3e50; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
+        .prescription-img { max-width: 100%; border-radius: 10px; margin-top: 8px; border: 1px solid #ddd; cursor: pointer; }
+        .prescription-container { background: #f1f9f5; padding: 10px; border-radius: 10px; margin-top: 10px; border-right: 3px solid #1abc9c; }
+        .time-remaining { font-size: 0.7rem; color: #7f8c8d; margin-top: 8px; padding: 4px 8px; background: #ecf0f1; border-radius: 8px; display: inline-block; }
+        .comments-container { max-height: 400px; overflow-y: auto; margin-bottom: 1rem; }
+        .comment-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+        .comment-user { font-weight: bold; color: #2c3e50; }
+        .comment-rating { color: #f39c12; }
+        .comment-date { font-size: 0.7rem; color: #95a5a6; }
+        .comment-text { color: #555; margin-top: 8px; }
+        .review-section { background: linear-gradient(135deg, #f8f9fa, #fff); border-radius: 20px; padding: 1.5rem; margin-top: 1.5rem; border: 1px solid #eee; }
+        .review-section h4 { color: #2c3e50; margin-bottom: 1rem; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+        .rating-input { margin-bottom: 1rem; }
+        .rating-input label { display: block; margin-bottom: 8px; color: #2c3e50; font-weight: 600; }
+        .comment-input textarea { width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px; resize: vertical; background: white; }
+        .submit-review-btn { background: linear-gradient(135deg, #27ae60, #2ecc71); width: 100%; padding: 12px; margin-top: 1rem; font-size: 1rem; }
+        .request-client-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #1abc9c, #2ecc71); display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; }
+        .request-client-avatar img { width: 100%; height: 100%; object-fit: cover; }
+        .request-header { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
+        .client-name { font-weight: bold; font-size: 1.1rem; cursor: pointer; color: #2c3e50; transition: 0.3s; }
+        .client-name:hover { color: #1abc9c; }
+        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s ease infinite; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @media (max-width: 768px) { .profile-header { flex-direction: column; text-align: center; } .cards-grid { gap: 1rem; } .container { padding: 0.8rem; } }
+    </style>
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo" onclick="goToHome()"><i class="fas fa-prescription-bottle"></i> صيدليتي | دليل الصيدليات</div>
+    <div style="display: flex; align-items: center;">
+        <div class="notification-bell" id="notificationBell" style="display: none;">
+            <i class="fas fa-bell"></i>
+            <span class="notification-badge" id="notificationCount">0</span>
+        </div>
+        <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
+    </div>
+</div>
+
+<div class="sidebar" id="sidebar">
+    <div class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></div>
+    <div class="user-info">
+        <div class="user-avatar" id="sidebarAvatar"><i class="fas fa-user-circle"></i></div>
+        <h3 id="sidebarUsername"></h3>
+        <p id="sidebarUserType"></p>
+    </div>
+    <a href="#" id="sideHome"><i class="fas fa-home"></i> الرئيسية</a>
+    <a href="#" id="sideProfile"><i class="fas fa-user-edit"></i> الملف الشخصي</a>
+    <a href="#" id="sideRequests"><i class="fas fa-clipboard-list"></i> طلباتي</a>
+    <a href="#" id="sideLogout"><i class="fas fa-sign-out-alt"></i> تسجيل الخروج</a>
+</div>
+<div class="overlay" id="overlay"></div>
+<div id="appContent"></div>
+
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyCdeHmlFnIJ2e9kQvXZ8XsF1yFOFlSqXU0",
+        authDomain: "facebookat-d5f39.firebaseapp.com",
+        databaseURL: "https://facebookat-d5f39-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "facebookat-d5f39",
+        storageBucket: "facebookat-d5f39.firebasestorage.app",
+        messagingSenderId: "1070831866107",
+        appId: "1:1070831866107:web:0ceaae0c5cf20c0cd9605e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    let currentUser = null;
+    let notificationInterval = null;
+    let cleanupInterval = null;
+
+    const countryCodes = [
+        { code: "+20", country: "🇪🇬 مصر", name: "مصر" }, { code: "+966", country: "🇸🇦 السعودية", name: "السعودية" },
+        { code: "+971", country: "🇦🇪 الإمارات", name: "الإمارات" }, { code: "+962", country: "🇯🇴 الأردن", name: "الأردن" },
+        { code: "+961", country: "🇱🇧 لبنان", name: "لبنان" }, { code: "+965", country: "🇰🇼 الكويت", name: "الكويت" },
+        { code: "+973", country: "🇧🇭 البحرين", name: "البحرين" }, { code: "+968", country: "🇴🇲 عمان", name: "عمان" },
+        { code: "+974", country: "🇶🇦 قطر", name: "قطر" }, { code: "+90", country: "🇹🇷 تركيا", name: "تركيا" },
+        { code: "+1", country: "🇺🇸 الولايات المتحدة", name: "الولايات المتحدة" }, { code: "+44", country: "🇬🇧 المملكة المتحدة", name: "المملكة المتحدة" },
+        { code: "+33", country: "🇫🇷 فرنسا", name: "فرنسا" }, { code: "+49", country: "🇩🇪 ألمانيا", name: "ألمانيا" },
+        { code: "+41", country: "🇨🇭 سويسرا", name: "سويسرا" }, { code: "+31", country: "🇳🇱 هولندا", name: "هولندا" },
+        { code: "+32", country: "🇧🇪 بلجيكا", name: "بلجيكا" }, { code: "+34", country: "🇪🇸 إسبانيا", name: "إسبانيا" },
+        { code: "+39", country: "🇮🇹 إيطاليا", name: "إيطاليا" }, { code: "+46", country: "🇸🇪 السويد", name: "السويد" },
+        { code: "+47", country: "🇳🇴 النرويج", name: "النرويج" }, { code: "+45", country: "🇩🇰 الدنمارك", name: "الدنمارك" },
+        { code: "+358", country: "🇫🇮 فنلندا", name: "فنلندا" }, { code: "+353", country: "🇮🇪 أيرلندا", name: "أيرلندا" },
+        { code: "+61", country: "🇦🇺 أستراليا", name: "أستراليا" }, { code: "+64", country: "🇳🇿 نيوزيلندا", name: "نيوزيلندا" },
+        { code: "+81", country: "🇯🇵 اليابان", name: "اليابان" }, { code: "+82", country: "🇰🇷 كوريا الجنوبية", name: "كوريا الجنوبية" },
+        { code: "+86", country: "🇨🇳 الصين", name: "الصين" }, { code: "+91", country: "🇮🇳 الهند", name: "الهند" },
+        { code: "+60", country: "🇲🇾 ماليزيا", name: "ماليزيا" }, { code: "+65", country: "🇸🇬 سنغافورة", name: "سنغافورة" },
+        { code: "+66", country: "🇹🇭 تايلاند", name: "تايلاند" }, { code: "+84", country: "🇻🇳 فيتنام", name: "فيتنام" },
+        { code: "+63", country: "🇵🇭 الفلبين", name: "الفلبين" }, { code: "+92", country: "🇵🇰 باكستان", name: "باكستان" },
+        { code: "+94", country: "🇱🇰 سريلانكا", name: "سريلانكا" }, { code: "+880", country: "🇧🇩 بنغلاديش", name: "بنغلاديش" },
+        { code: "+234", country: "🇳🇬 نيجيريا", name: "نيجيريا" }, { code: "+27", country: "🇿🇦 جنوب أفريقيا", name: "جنوب أفريقيا" },
+        { code: "+212", country: "🇲🇦 المغرب", name: "المغرب" }, { code: "+216", country: "🇹🇳 تونس", name: "تونس" },
+        { code: "+213", country: "🇩🇿 الجزائر", name: "الجزائر" }, { code: "+218", country: "🇱🇾 ليبيا", name: "ليبيا" },
+        { code: "+249", country: "🇸🇩 السودان", name: "السودان" }, { code: "+964", country: "🇮🇶 العراق", name: "العراق" },
+        { code: "+963", country: "🇸🇾 سوريا", name: "سوريا" }, { code: "+970", country: "🇵🇸 فلسطين", name: "فلسطين" },
+        { code: "+998", country: "🇺🇿 أوزبكستان", name: "أوزبكستان" }, { code: "+7", country: "🇷🇺 روسيا", name: "روسيا" },
+        { code: "+380", country: "🇺🇦 أوكرانيا", name: "أوكرانيا" }
+    ];
+
+    const egyptGovernorates = {
+        "القاهرة": ["الزيتون", "الأميرية", "المطرية", "عين شمس", "مدينة نصر", "مصر الجديدة", "الوايلي", "باب الشعرية", "بولاق", "جاردن سيتي", "وسط البلد", "العباسية", "شبرا", "روض الفرج", "الساحل", "الخليفة", "المقطم", "التبين", "حلوان", "المعادي", "دار السلام", "البساتين", "الظاهر", "منشأة ناصر"],
+        "الإسكندرية": ["المنتزه", "شرق", "وسط", "غرب", "الجمرك", "العجمي", "برج العرب", "الدخيلة", "مينا البصل", "باكوس", "سيدي بشر", "السيوف", "كرموز", "محرم بك", "العطارين", "الأنفوشي", "الورديان", "القباري"],
+        "الجيزة": ["العجوزة", "الدقي", "الهرم", "بولاق الدكرور", "أوسيم", "كرداسة", "البدرشين", "الصف", "العياط", "أبو النمرس", "منشأة القناطر", "الوراق", "إمبابة", "المهندسين", "الزمالك", "الرحاب", "الشيخ زايد", "السادس من أكتوبر"],
+        "الشرقية": ["الزقازيق", "العاشر من رمضان", "بلبيس", "منيا القمح", "أبو حماد", "ههيا", "مشتول السوق", "ديرب نجم", "فاقوس", "أبو كبير", "كفر صقر", "الحسينية", "صان الحجر", "الإبراهيمية", "القرين", "أولاد صقر"],
+        "الدقهلية": ["المنصورة", "طلخا", "المحلة", "ميت غمر", "أجا", "تمي الأمديد", "دكرنس", "السنبلاوين", "نبروه", "شربين", "بلقاس", "بني عبيد", "منية النصر", "ميت سلسيل", "المنزلة", "الجمالية"],
+        "البحيرة": ["دمنهور", "رشيد", "إيتاي البارود", "كوم حمادة", "المحمودية", "حوش عيسى", "أبو حمص", "شبراخيت", "الدلنجات", "بدر", "النوبارية الجديدة", "وادي النطرون", "أبو المطامير", "الرحمانية", "إدكو"],
+        "الغربية": ["طنطا", "المحلة الكبرى", "كفر الزيات", "زفتى", "بسيون", "قطور", "سمنود", "السنطة"],
+        "المنوفية": ["شبين الكوم", "منوف", "السادات", "تلا", "بركة السبع", "أشمون", "الباجور", "قويسنا", "سرس الليان"],
+        "القليوبية": ["بنها", "شبرا الخيمة", "قليوب", "الخانكة", "كفر شكر", "طوخ", "قها", "العبور", "الخصوص"],
+        "الفيوم": ["الفيوم", "سنورس", "طامية", "إبشواي", "يوسف الصديق", "أطسا"],
+        "بني سويف": ["بني سويف", "الواسطى", "ببا", "الفشن", "سمسطا", "ناصر", "إهناسيا"],
+        "المنيا": ["المنيا", "ملوي", "أبو قرقاص", "مغاغة", "العدوة", "بني مزار", "مطاي", "سمالوط", "دير مواس"],
+        "أسيوط": ["أسيوط", "ديروط", "القوصية", "أبنوب", "منفلوط", "الفتح", "البداري", "ساحل سليم", "أبو تيج", "غرب أسيوط"],
+        "سوهاج": ["سوهاج", "أخميم", "طهطا", "البلينا", "جرجا", "المراغة", "دار السلام", "المنشأة", "ساقلته", "العسيرات"],
+        "قنا": ["قنا", "نقادة", "قفط", "الوقف", "فرشوط", "نجع حمادي", "دشنا", "أبو تشت"],
+        "الأقصر": ["الأقصر", "البياضية", "القرنة", "إسنا", "أرمنت", "الطود", "الزينية"],
+        "أسوان": ["أسوان", "إدفو", "السباعية", "كوم أمبو", "نصر النوبة", "دراو", "كلابشة"],
+        "البحر الأحمر": ["الغردقة", "رأس غارب", "سفاجا", "القصير", "مرسى علم", "حلايب", "شلاتين"],
+        "شمال سيناء": ["العريش", "الشيخ زويد", "رفح", "بئر العبد", "الحسنة", "نخل"],
+        "جنوب سيناء": ["الطور", "شرم الشيخ", "دهب", "نويبع", "سانت كاترين", "أبو رديس", "أبو زنيمة"],
+        "الوادي الجديد": ["الخارجة", "الداخلة", "الفرافرة", "بلاط", "باريس"],
+        "مطروح": ["مرسى مطروح", "الضبعة", "الحمام", "العلمين", "النجيلة", "سيوة", "براني"],
+        "دمياط": ["دمياط", "فارسكور", "كفر سعد", "الزرقا", "رأس البر", "عزبة البرج", "كفر البطيخ"],
+        "كفر الشيخ": ["كفر الشيخ", "دسوق", "فوه", "مطوبس", "بيلا", "سيدي سالم", "الرياض", "قلين", "بلطيم", "الحامول"],
+        "الإسماعيلية": ["الإسماعيلية", "فايد", "القنطرة شرق", "القنطرة غرب", "التل الكبير", "أبو صوير"],
+        "السويس": ["السويس", "الأربعين", "عتاقة", "الجنوب", "فيصل"],
+        "بورسعيد": ["بورسعيد", "الزهور", "العرب", "الضواحي", "المناخ", "بورفؤاد"]
+    };
+
+    function showMessage(message, isError = false) {
+        const existing = document.querySelector('.sweet-message');
+        if (existing) existing.remove();
+        const msgDiv = document.createElement('div');
+        msgDiv.className = 'sweet-message';
+        msgDiv.innerHTML = `<i class="fas ${isError ? 'fa-times-circle' : 'fa-check-circle'}" style="color: ${isError ? '#e74c3c' : '#27ae60'}; font-size: 2rem;"></i><p>${message}</p>`;
+        document.body.appendChild(msgDiv);
+        setTimeout(() => msgDiv.remove(), 2000);
+    }
+
+    function showConfirm(title, message, onConfirm) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `<div class="modal-content"><h3>${title}</h3><p>${message}</p><div class="modal-buttons"><button class="accept-btn" id="confirmYes">نعم</button><button class="reject-btn" id="confirmNo">إلغاء</button></div></div>`;
+        document.body.appendChild(modal);
+        document.getElementById('confirmYes').onclick = () => { onConfirm(); modal.remove(); };
+        document.getElementById('confirmNo').onclick = () => modal.remove();
+    }
+
+    function openWhatsApp(phoneWithCode) {
+        let number = phoneWithCode.replace(/\D/g, '');
+        window.open(`https://wa.me/${number}`, '_blank');
+    }
+
+    function updateCenterOptions(governorateSelectId, centerSelectId, selectedCenter = '') {
+        const governorate = document.getElementById(governorateSelectId).value;
+        const centerSelect = document.getElementById(centerSelectId);
+        if (governorate && egyptGovernorates[governorate]) {
+            centerSelect.innerHTML = '<option value="">اختر المركز</option>' + 
+                egyptGovernorates[governorate].map(center => `<option value="${center}" ${selectedCenter === center ? 'selected' : ''}>${center}</option>`).join('');
+            centerSelect.disabled = false;
+        } else {
+            centerSelect.innerHTML = '<option value="">اختر المحافظة أولاً</option>';
+            centerSelect.disabled = true;
+        }
+    }
+
+    // ========== تحسينات قاعدة البيانات: جلب البيانات بتصفية مباشرة ==========
+    async function getAllPharmaciesByCenter(center) {
+        const snap = await db.ref('users')
+            .orderByChild('center')
+            .equalTo(center)
+            .once('value');
+        
+        const pharmacies = [];
+        snap.forEach(child => {
+            const user = child.val();
+            if (user.type === 'pharmacy') {
+                pharmacies.push({ username: child.key, ...user });
+            }
+        });
+        return pharmacies;
+    }
+
+    async function getUserData(username) {
+        const snap = await db.ref('users/' + username).once('value');
+        return snap.val();
+    }
+
+    async function getRequestsForUser(username, type) {
+        const field = type === 'client' ? 'clientId' : 'pharmacyId';
+        const snap = await db.ref('requests')
+            .orderByChild(field)
+            .equalTo(username)
+            .once('value');
+        
+        const requests = [];
+        snap.forEach(s => {
+            requests.push({ id: s.key, ...s.val() });
+        });
+        return requests;
+    }
+
+    async function cleanupOldRequests() {
+        if (!currentUser) return;
+        
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000;
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        
+        const requests = await getRequestsForUser(currentUser.username, currentUser.type === 'client' ? 'client' : 'pharmacy');
+        const updates = {};
+        
+        for (let req of requests) {
+            const completedAt = req.completedAt || req.rejectedAt;
+            if (completedAt) {
+                const timeDiff = now - completedAt;
+                
+                if (currentUser.type === 'pharmacy' && (req.status === 'completed' || req.status === 'rejected')) {
+                    if (timeDiff >= fiveMinutes) {
+                        updates[req.id] = null;
+                    }
+                }
+                else if (currentUser.type === 'client' && (req.status === 'completed' || req.status === 'rejected')) {
+                    if (timeDiff >= twentyFourHours) {
+                        updates[req.id] = null;
+                    }
+                }
+            }
+        }
+        
+        if (Object.keys(updates).length > 0) {
+            await db.ref('requests').update(updates);
+        }
+    }
+
+    function startCleanupInterval() {
+        if (cleanupInterval) clearInterval(cleanupInterval);
+        cleanupInterval = setInterval(async () => {
+            if (currentUser) {
+                await cleanupOldRequests();
+                const currentView = document.querySelector('#reqList');
+                if (currentView) {
+                    if (currentUser.type === 'client') renderClientRequests();
+                    else if (currentUser.type === 'pharmacy') renderPharmacyRequests();
+                }
+            }
+        }, 60000);
+    }
+
+    window.viewClientProfile = async (clientId) => {
+        const client = await getUserData(clientId);
+        if (!client) { showMessage('المستخدم غير موجود', true); return; }
+        const displayName = client.type === 'pharmacy' ? (client.pharmacyName || client.username) : client.username;
+        
+        // جلب تعليقات المستخدم على الصيدليات
+        const allPharmaciesSnap = await db.ref('users').orderByChild('type').equalTo('pharmacy').once('value');
+        const userComments = [];
+        allPharmaciesSnap.forEach(pharmacySnap => {
+            const pharmacy = pharmacySnap.val();
+            if (pharmacy.comments) {
+                pharmacy.comments.forEach(comment => {
+                    if (comment.username === clientId) {
+                        userComments.push({
+                            pharmacyName: pharmacy.pharmacyName || pharmacySnap.key,
+                            rating: comment.rating,
+                            comment: comment.comment,
+                            date: comment.date
+                        });
+                    }
+                });
+            }
+        });
+        userComments.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        document.getElementById('appContent').innerHTML = `
+            <div class="container">
+                <button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
+                <div class="profile-info">
+                    <div class="profile-header">
+                        <div class="profile-avatar">${client.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div>
+                        <div><h2>${displayName}</h2><p>${client.type === 'client' ? '📋 مريض' : '💊 صيدلية'}</p><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${client.center || 'غير محدد'} - ${client.governorate || 'غير محدد'}</div></div>
+                    </div>
+                    <h3><i class="fas fa-info-circle"></i> معلومات</h3>
+                    <p>${client.bio || 'لا توجد معلومات'}</p>
+                    ${client.type === 'pharmacy' ? `<h3>معلومات التواصل</h3><p><i class="fas fa-phone"></i> ${client.phone || 'غير متاح'}</p><p><i class="fab fa-whatsapp"></i> ${client.whatsapp || 'غير متاح'}</p>` : ''}
+                    <h3 style="margin-top: 1.5rem;"><i class="fas fa-star"></i> تقييم المستخدم</h3>
+                    <p style="font-size: 1.5rem; color: #f39c12;">⭐ ${client.avgRating ? client.avgRating.toFixed(1) : 'لا يوجد تقييمات'}</p>
+                    <h3 style="margin-top: 1.5rem;"><i class="fas fa-comments"></i> تعليقاته على الصيدليات</h3>
+                    <div class="comments-container">
+                        ${userComments.length === 0 ? '<p style="text-align: center; padding: 1rem;">لا توجد تعليقات من هذا المستخدم بعد</p>' : 
+                            userComments.map(c => `
+                                <div class="comment-item">
+                                    <div class="comment-header">
+                                        <span class="comment-user"><i class="fas fa-prescription-bottle"></i> الصيدلية: ${c.pharmacyName}</span>
+                                        <span class="comment-rating">${'⭐'.repeat(c.rating)} (${c.rating})</span>
+                                        <span class="comment-date">${new Date(c.date).toLocaleDateString('ar')}</span>
+                                    </div>
+                                    <div class="comment-text">${c.comment || 'لا يوجد تعليق'}</div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                </div>
+            </div>`;
+        closeSidebar();
+    };
+
+    async function loginUser(username, password, rememberMe = false) {
+        const snapshot = await db.ref('users').orderByChild('username').equalTo(username).once('value');
+        if (snapshot.exists()) {
+            let userData = null;
+            snapshot.forEach(child => { userData = child.val(); });
+            if (userData && userData.password === password) {
+                currentUser = { username: username, ...userData };
+                if (rememberMe) { localStorage.setItem('rememberedUser', username); localStorage.setItem('rememberedPass', password); } 
+                else { localStorage.removeItem('rememberedUser'); localStorage.removeItem('rememberedPass'); }
+                updateUI();
+                renderPage();
+                startNotifications();
+                startCleanupInterval();
+                showMessage(`مرحباً ${currentUser.type === 'pharmacy' ? (currentUser.pharmacyName || username) : username}!`);
+                return true;
+            } else { showMessage('كلمة المرور غير صحيحة', true); return false; }
+        } else { showMessage('اسم المستخدم غير موجود', true); return false; }
+    }
+
+    async function registerUser(username, password, type, pharmacyName, phone, whatsappCode, whatsappNumber, governorate, center) {
+        const snapshot = await db.ref('users').orderByChild('username').equalTo(username).once('value');
+        if (snapshot.exists()) { showMessage('اسم المستخدم موجود بالفعل', true); return false; }
+        const fullWhatsapp = whatsappCode + whatsappNumber;
+        const userData = {
+            username, password, type, avatar: '', ratingSum: 0, ratingCount: 0, avgRating: 0, comments: [],
+            bio: type === 'pharmacy' ? 'صيدلية موثوقة تقدم خدمات دوائية ممتازة' : 'مريض يبحث عن أدويته',
+            createdAt: new Date().toISOString(), governorate, center
+        };
+        if (type === 'pharmacy') {
+            if (!phone || !pharmacyName) { showMessage('اسم الصيدلية ورقم الهاتف مطلوبان', true); return false; }
+            userData.pharmacyName = pharmacyName;
+            userData.phone = phone;
+            userData.whatsappCode = whatsappCode;
+            userData.whatsappNumber = whatsappNumber;
+            userData.whatsapp = fullWhatsapp;
+        }
+        await db.ref('users/' + username).set(userData);
+        currentUser = { username: username, ...userData };
+        updateUI();
+        renderPage();
+        startNotifications();
+        startCleanupInterval();
+        showMessage(`تم إنشاء الحساب بنجاح! مرحباً ${type === 'pharmacy' ? pharmacyName : username}`);
+        return true;
+    }
+
+    async function logout() {
+        if (notificationInterval) clearInterval(notificationInterval);
+        if (cleanupInterval) clearInterval(cleanupInterval);
+        currentUser = null;
+        updateUI();
+        showAuthScreen();
+        closeSidebar();
+    }
+
+    function updateUI() {
+        if (currentUser) {
+            const displayName = currentUser.type === 'pharmacy' ? (currentUser.pharmacyName || currentUser.username) : currentUser.username;
+            document.getElementById('sidebarUsername').innerText = displayName;
+            document.getElementById('sidebarUserType').innerText = currentUser.type === 'client' ? 'مريض' : 'صيدلية';
+            const avatarDiv = document.getElementById('sidebarAvatar');
+            if (currentUser.avatar) avatarDiv.innerHTML = `<img src="${currentUser.avatar}">`;
+            else avatarDiv.innerHTML = '<i class="fas fa-user-circle"></i>';
+            document.getElementById('notificationBell').style.display = currentUser.type === 'pharmacy' ? 'flex' : 'none';
+        } else {
+            document.getElementById('notificationBell').style.display = 'none';
+        }
+    }
+
+    async function updateNotificationCount() {
+        if (!currentUser || currentUser.type !== 'pharmacy') return;
+        const requests = await getRequestsForUser(currentUser.username, 'pharmacy');
+        const count = requests.filter(r => r.status === 'pending').length;
+        document.getElementById('notificationCount').innerText = count;
+    }
+
+    function startNotifications() {
+        if (notificationInterval) clearInterval(notificationInterval);
+        if (currentUser && currentUser.type === 'pharmacy') {
+            updateNotificationCount();
+            notificationInterval = setInterval(updateNotificationCount, 5000);
+        }
+    }
+
+    function showAuthScreen() {
+        closeSidebar();
+        document.getElementById('appContent').innerHTML = `
+            <div class="auth-wrapper">
+                <div class="auth-card">
+                    <div style="text-align: center; margin-bottom: 1.5rem;">
+                        <h2 style="color: #2c3e50;"><i class="fas fa-prescription-bottle"></i> صيدليتي</h2>
+                        <p style="color: #7f8c8d;">اطلب أدويتك من الصيدليات القريبة</p>
+                    </div>
+                    <div id="authForm"></div>
+                </div>
+            </div>
+        `;
+        renderAuthForm('login');
+    }
+
+    function renderAuthForm(type) {
+        const governorateOptions = Object.keys(egyptGovernorates).map(g => `<option value="${g}">${g}</option>`).join('');
+        const countryOptions = countryCodes.map(c => `<option value="${c.code}">${c.country} ${c.code}</option>`).join('');
+        
+        if (type === 'login') {
+            const savedUsername = localStorage.getItem('rememberedUser') || '';
+            const savedPassword = localStorage.getItem('rememberedPass') || '';
+            const isChecked = !!(savedUsername && savedPassword);
+            document.getElementById('authForm').innerHTML = `
+                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="loginUsername" placeholder="اسم المستخدم" value="${savedUsername}"></div>
+                <div class="input-group"><div class="password-wrapper"><input type="password" id="loginPassword" placeholder="كلمة السر" value="${savedPassword}"><i class="fas fa-eye toggle-password" id="toggleLoginPassword"></i></div></div>
+                <div class="remember-me"><input type="checkbox" id="rememberMeCheckbox" ${isChecked ? 'checked' : ''}><label for="rememberMeCheckbox">تذكرني</label></div>
+                <button id="doLoginBtn" style="width: 100%;">دخول</button>
+                <hr style="margin: 15px 0;"><p style="text-align: center;">ليس لديك حساب؟ <a href="#" id="switchToReg" style="color: #1abc9c;">سجل الآن</a></p>`;
+            
+            document.getElementById('toggleLoginPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('loginPassword');
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.classList.toggle('fa-eye-slash');
+            });
+            document.getElementById('doLoginBtn').onclick = async () => {
+                const username = document.getElementById('loginUsername').value.trim();
+                const password = document.getElementById('loginPassword').value;
+                const rememberMe = document.getElementById('rememberMeCheckbox').checked;
+                if (!username || !password) { showMessage('يرجى إدخال اسم المستخدم وكلمة السر', true); return; }
+                await loginUser(username, password, rememberMe);
+            };
+            document.getElementById('switchToReg').onclick = (e) => { e.preventDefault(); renderAuthForm('register'); };
+        } else {
+            document.getElementById('authForm').innerHTML = `
+                <div class="input-group"><i class="fas fa-user"></i><input type="text" id="regUsername" placeholder="اسم المستخدم (للدخول)"></div>
+                <div class="input-group"><i class="fas fa-store"></i><input type="text" id="regPharmacyName" placeholder="اسم الصيدلية (للصيدليات)"></div>
+                <div class="input-group"><div class="password-wrapper"><input type="password" id="regPassword" placeholder="كلمة السر"><i class="fas fa-eye toggle-password" id="toggleRegPassword"></i></div></div>
+                <div class="input-group"><select id="regType"><option value="client">📋 مريض</option><option value="pharmacy">💊 صيدلية</option></select></div>
+                <div class="location-group"><label><i class="fas fa-city"></i> المحافظة</label><select id="regGovernorate" class="location-select">${governorateOptions}</select></div>
+                <div class="location-group"><label><i class="fas fa-map-marker-alt"></i> المركز</label><select id="regCenter" class="location-select" disabled><option value="">اختر المحافظة أولاً</option></select></div>
+                <div id="pharmacyFields" style="display: none;">
+                    <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="phoneNumber" placeholder="رقم الهاتف للاتصال"></div>
+                    <div class="whatsapp-wrapper"><select id="whatsappCode">${countryOptions}</select><input type="tel" id="whatsappNumber" placeholder="رقم الواتساب"></div>
+                </div>
+                <button id="doRegisterBtn" style="width: 100%;">إنشاء حساب</button>
+                <hr style="margin: 15px 0;"><p style="text-align: center;">لديك حساب بالفعل؟ <a href="#" id="switchToLogin" style="color: #1abc9c;">تسجيل الدخول</a></p>`;
+            
+            document.getElementById('toggleRegPassword')?.addEventListener('click', function() {
+                const input = document.getElementById('regPassword');
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.classList.toggle('fa-eye-slash');
+            });
+            document.getElementById('regGovernorate').addEventListener('change', () => updateCenterOptions('regGovernorate', 'regCenter'));
+            document.getElementById('regType').onchange = () => {
+                const isPharmacy = document.getElementById('regType').value === 'pharmacy';
+                document.getElementById('pharmacyFields').style.display = isPharmacy ? 'block' : 'none';
+            };
+            document.getElementById('regType').dispatchEvent(new Event('change'));
+            
+            document.getElementById('doRegisterBtn').onclick = async () => {
+                const username = document.getElementById('regUsername').value.trim();
+                const password = document.getElementById('regPassword').value;
+                const type = document.getElementById('regType').value;
+                const governorate = document.getElementById('regGovernorate').value;
+                const center = document.getElementById('regCenter').value;
+                let pharmacyName = '', phone = '', whatsappCode = '', whatsappNumber = '';
+                if (!username || !password) { showMessage('يرجى إدخال اسم المستخدم وكلمة السر', true); return; }
+                if (!governorate) { showMessage('يرجى اختيار المحافظة', true); return; }
+                if (!center) { showMessage('يرجى اختيار المركز', true); return; }
+                if (type === 'pharmacy') {
+                    pharmacyName = document.getElementById('regPharmacyName').value.trim();
+                    phone = document.getElementById('phoneNumber').value;
+                    whatsappCode = document.getElementById('whatsappCode').value;
+                    whatsappNumber = document.getElementById('whatsappNumber').value;
+                    if (!pharmacyName) { showMessage('اسم الصيدلية مطلوب', true); return; }
+                    if (!phone) { showMessage('رقم الهاتف مطلوب', true); return; }
+                    if (!whatsappNumber) { showMessage('رقم الواتساب مطلوب', true); return; }
+                }
+                await registerUser(username, password, type, pharmacyName, phone, whatsappCode, whatsappNumber, governorate, center);
+            };
+            document.getElementById('switchToLogin').onclick = (e) => { e.preventDefault(); renderAuthForm('login'); };
+        }
+    }
+
+    function renderPage() {
+        if (!currentUser) { showAuthScreen(); }
+        else if (currentUser.type === 'client') { renderClientHome(); }
+        else if (currentUser.type === 'pharmacy') { renderPharmacyHome(); }
+    }
+
+    async function renderClientHome() {
+        const pharmacies = await getAllPharmaciesByCenter(currentUser.center);
+        document.getElementById('appContent').innerHTML = `
+            <div class="container">
+                <div style="background: rgba(255,255,255,0.9); border-radius: 15px; padding: 1rem; margin-bottom: 1rem; text-align: center;">
+                    <h3><i class="fas fa-map-marker-alt"></i> موقعك الحالي</h3>
+                    <p><strong>المحافظة:</strong> ${currentUser.governorate || 'غير محدد'} | <strong>المركز:</strong> ${currentUser.center || 'غير محدد'}</p>
+                    <p style="color: #27ae60;">✨ تظهر لك الصيدليات القريبة من مركزك فقط</p>
+                </div>
+                <h2 style="color: white;">الصيدليات في ${currentUser.center}</h2>
+                <div class="input-group" style="background: white; border-radius: 50px;"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="بحث باسم الصيدلية..." style="border: none;"></div>
+                <div id="pharmaciesGrid" class="cards-grid"></div>
+            </div>`;
+        displayPharmacies(pharmacies);
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const filtered = pharmacies.filter(p => (p.pharmacyName || p.username).includes(e.target.value));
+            displayPharmacies(filtered);
+        });
+    }
+
+    function displayPharmacies(list) {
+        const grid = document.getElementById('pharmaciesGrid');
+        if (!grid) return;
+        if (list.length === 0) { grid.innerHTML = '<p style="color: white; text-align: center;">لا توجد صيدليات في مركزك حالياً</p>'; return; }
+        grid.innerHTML = list.map(p => `
+            <div class="card" onclick="viewPharmacy('${p.username}')">
+                <div class="card-avatar">${p.avatar ? `<img src="${p.avatar}">` : '<i class="fas fa-hospital-user"></i>'}</div>
+                <h3>${p.pharmacyName || p.username}</h3>
+                <div class="rating">⭐ ${p.avgRating ? p.avgRating.toFixed(1) : 'جديد'} (${p.ratingCount || 0})</div>
+                <span class="badge"><i class="fas fa-pills"></i> صيدلية</span>
+                <div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${p.center} - ${p.governorate}</div>
+                <p><i class="fas fa-phone"></i> ${p.phone || 'غير متاح'}</p>
+            </div>`).join('');
+    }
+
+    window.viewPharmacy = async (pharmId) => {
+        const pharmacy = await getUserData(pharmId);
+        if (!pharmacy) return;
+        const comments = (pharmacy.comments || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+        const whatsappDisplay = pharmacy.whatsapp ? `${pharmacy.whatsappCode || ''} ${pharmacy.whatsappNumber || ''}` : pharmacy.whatsapp || pharmacy.phone;
+        const pharmacyDisplayName = pharmacy.pharmacyName || pharmacy.username;
+        
+        document.getElementById('appContent').innerHTML = `
+            <div class="container">
+                <button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
+                <div class="profile-info">
+                    <div class="profile-header">
+                        <div class="profile-avatar">${pharmacy.avatar ? `<img src="${pharmacy.avatar}">` : '<i class="fas fa-hospital-user"></i>'}</div>
+                        <div><h2>${pharmacyDisplayName}</h2><p class="rating">⭐ ${pharmacy.avgRating ? pharmacy.avgRating.toFixed(1) : 'لا يوجد تقييمات'} (${pharmacy.ratingCount || 0})</p><span class="badge"><i class="fas fa-pills"></i> صيدلية</span><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${pharmacy.center} - ${pharmacy.governorate}</div></div>
+                    </div>
+                    <p><i class="fas fa-phone"></i> ${pharmacy.phone}</p>
+                    <p><i class="fab fa-whatsapp"></i> ${whatsappDisplay}</p>
+                    <p><i class="fas fa-info-circle"></i> ${pharmacy.bio || 'صيدلية موثوقة'}</p>
+                    <div class="flex-buttons">
+                        <button id="callBtn" class="call-btn"><i class="fas fa-phone"></i> اتصال</button>
+                        <button id="whatsappBtn" class="call-btn"><i class="fab fa-whatsapp"></i> واتساب</button>
+                        <button id="requestBtn" style="background: #27ae60;"><i class="fas fa-prescription"></i> طلب دواء</button>
+                    </div>
+                    <h3 style="margin-top: 1.5rem;"><i class="fas fa-comments"></i> تقييمات العملاء</h3>
+                    <div class="comments-container">${comments.length === 0 ? '<p style="text-align: center; padding: 1rem;">لا توجد تعليقات بعد</p>' : comments.map(c => `<div class="comment-item"><div class="comment-header"><span class="comment-user"><i class="fas fa-user"></i> ${c.username}</span><span class="comment-rating">${'⭐'.repeat(c.rating)}</span><span class="comment-date">${new Date(c.date).toLocaleDateString('ar')}</span></div><div class="comment-text">${c.comment || ''}</div></div>`).join('')}</div>
+                    <div class="review-section"><h4><i class="fas fa-edit"></i> أضف تقييمك</h4><div class="rating-input"><label><i class="fas fa-star" style="color:#f39c12;"></i> التقييم</label><select id="newRating"><option value="5">★★★★★ (ممتاز)</option><option value="4">★★★★☆ (جيد جداً)</option><option value="3">★★★☆☆ (جيد)</option><option value="2">★★☆☆☆ (مقبول)</option><option value="1">★☆☆☆☆ (سيئ)</option></select></div><div class="comment-input"><label><i class="fas fa-comment"></i> تعليقك</label><textarea id="newComment" placeholder="اكتب تجربتك مع الصيدلية..." rows="3"></textarea></div><button id="addCommentBtn" class="submit-review-btn"><i class="fas fa-paper-plane"></i> إرسال التقييم</button></div>
+                </div>
+            </div>`;
+        
+        document.getElementById('callBtn').onclick = () => window.location.href = `tel:${pharmacy.phone}`;
+        document.getElementById('whatsappBtn').onclick = () => openWhatsApp(pharmacy.whatsapp || pharmacy.phone);
+        document.getElementById('requestBtn').onclick = () => openRequestModal(pharmId);
+        document.getElementById('addCommentBtn').onclick = async () => {
+            const comment = document.getElementById('newComment').value;
+            const rating = parseInt(document.getElementById('newRating').value);
+            await db.ref('users/' + pharmId).update({
+                ratingSum: (pharmacy.ratingSum||0) + rating,
+                ratingCount: (pharmacy.ratingCount||0) + 1,
+                avgRating: ((pharmacy.ratingSum||0) + rating) / ((pharmacy.ratingCount||0) + 1),
+                comments: [...(pharmacy.comments||[]), { username: currentUser.username, rating, comment, date: new Date().toISOString() }]
+            });
+            showMessage('شكراً لتقييمك! تم إضافة تعليقك');
+            viewPharmacy(pharmId);
+        };
+    };
+
+    async function renderProfile() {
+        const countryOptions = countryCodes.map(c => `<option value="${c.code}" ${currentUser.whatsappCode === c.code ? 'selected' : ''}>${c.country} ${c.code}</option>`).join('');
+        const governorateOptions = Object.keys(egyptGovernorates).map(g => `<option value="${g}" ${currentUser.governorate === g ? 'selected' : ''}>${g}</option>`).join('');
+        
+        document.getElementById('appContent').innerHTML = `
+            <div class="container">
+                <button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
+                <div class="profile-info">
+                    <div class="profile-header"><div class="profile-avatar" id="avatarClick">${currentUser.avatar ? `<img src="${currentUser.avatar}">` : '<i class="fas fa-user-circle"></i>'}<div class="avatar-overlay"><i class="fas fa-camera"></i></div></div><div><h2>${currentUser.type === 'pharmacy' ? (currentUser.pharmacyName || currentUser.username) : currentUser.username}</h2><p>${currentUser.type === 'client' ? 'مريض' : 'صيدلية'}</p></div></div>
+                    <div id="profileForm">
+                        <div class="input-group"><i class="fas fa-user"></i><input type="text" id="editUsername" value="${currentUser.username}" placeholder="اسم المستخدم"></div>
+                        ${currentUser.type === 'pharmacy' ? `<div class="input-group"><i class="fas fa-store"></i><input type="text" id="editPharmacyName" value="${currentUser.pharmacyName || ''}" placeholder="اسم الصيدلية"></div>` : ''}
+                        <div class="input-group"><i class="fas fa-lock"></i><input type="password" id="editPassword" placeholder="كلمة السر الجديدة (اتركه فارغاً إذا لا تريد التغيير)"></div>
+                        <div class="input-group"><i class="fas fa-info-circle"></i><textarea id="editBio" placeholder="السيرة الذاتية" rows="3">${currentUser.bio || ''}</textarea></div>
+                        <div class="location-group"><label><i class="fas fa-city"></i> المحافظة</label><select id="editGovernorate" class="location-select">${governorateOptions}</select></div>
+                        <div class="location-group"><label><i class="fas fa-map-marker-alt"></i> المركز</label><select id="editCenter" class="location-select" disabled><option value="">اختر المحافظة أولاً</option></select></div>
+                        ${currentUser.type === 'pharmacy' ? `
+                            <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="editPhone" value="${currentUser.phone || ''}" placeholder="رقم الهاتف"></div>
+                            <div class="whatsapp-wrapper"><select id="editWhatsappCode">${countryOptions}</select><input type="tel" id="editWhatsappNumber" value="${currentUser.whatsappNumber || ''}" placeholder="رقم الواتساب"></div>
+                        ` : ''}
+                        <div class="flex-buttons"><button id="saveProfileBtn"><i class="fas fa-save"></i> حفظ التغييرات</button><button id="deleteAccountBtn" class="delete-btn"><i class="fas fa-trash"></i> حذف الحساب</button></div>
+                    </div>
+                </div>
+            </div>`;
+        
+        if (currentUser.center) setTimeout(() => updateCenterOptions('editGovernorate', 'editCenter', currentUser.center), 100);
+        document.getElementById('editGovernorate').addEventListener('change', () => updateCenterOptions('editGovernorate', 'editCenter'));
+        document.getElementById('avatarClick').onclick = () => openAvatarModal();
+        document.getElementById('saveProfileBtn').onclick = async () => {
+            const newUsername = document.getElementById('editUsername').value.trim();
+            const newPassword = document.getElementById('editPassword').value;
+            const newBio = document.getElementById('editBio').value;
+            const newGovernorate = document.getElementById('editGovernorate').value;
+            const newCenter = document.getElementById('editCenter').value;
+            if (!newUsername || !newGovernorate || !newCenter) { showMessage('جميع الحقول مطلوبة', true); return; }
+            if (newUsername !== currentUser.username) {
+                const check = await getUserData(newUsername);
+                if (check) { showMessage('اسم المستخدم موجود', true); return; }
+                const oldData = { ...currentUser };
+                await db.ref('users/' + newUsername).set({ ...oldData, username: newUsername });
+                await db.ref('users/' + currentUser.username).remove();
+                currentUser.username = newUsername;
+            }
+            const updates = { bio: newBio, governorate: newGovernorate, center: newCenter };
+            if (newPassword) updates.password = newPassword;
+            if (currentUser.type === 'pharmacy') {
+                const newPharmacyName = document.getElementById('editPharmacyName').value.trim();
+                if (newPharmacyName) updates.pharmacyName = newPharmacyName;
+                updates.phone = document.getElementById('editPhone').value;
+                updates.whatsappCode = document.getElementById('editWhatsappCode').value;
+                updates.whatsappNumber = document.getElementById('editWhatsappNumber').value;
+                updates.whatsapp = updates.whatsappCode + updates.whatsappNumber;
+            }
+            await db.ref('users/' + currentUser.username).update(updates);
+            Object.assign(currentUser, updates);
+            updateUI();
+            showMessage('تم حفظ التغييرات!');
+            renderProfile();
+        };
+        document.getElementById('deleteAccountBtn').onclick = () => showConfirm('حذف الحساب', 'هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء', async () => { await db.ref('users/' + currentUser.username).remove(); await logout(); });
+    }
+
+    function openAvatarModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `<div class="modal-content"><h3><i class="fas fa-camera"></i> تغيير الصورة الشخصية</h3><div class="image-preview" id="previewContainer"><i class="fas fa-user-circle" style="font-size: 5rem; color: #ccc;"></i></div><label class="upload-btn"><i class="fas fa-cloud-upload-alt"></i> اختر صورة من الجهاز <input type="file" id="avatarFile" accept="image/*" class="file-input"></label><p style="font-size: 0.7rem; color: #7f8c8d;">يدعم الصور JPG, PNG (حد أقصى 2MB)</p><div class="modal-buttons"><button id="saveAvatarBtn" class="accept-btn">حفظ الصورة</button><button id="closeAvatarBtn" class="reject-btn">إلغاء</button></div></div>`;
+        document.body.appendChild(modal);
+        let selectedBase64 = null;
+        document.getElementById('avatarFile').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) { showMessage('الصورة كبيرة جداً (حد أقصى 2MB)', true); return; }
+                const reader = new FileReader();
+                reader.onload = (ev) => { selectedBase64 = ev.target.result; document.getElementById('previewContainer').innerHTML = `<img src="${selectedBase64}" style="width:100%;height:100%;object-fit:cover;">`; };
+                reader.readAsDataURL(file);
+            }
+        };
+        document.getElementById('saveAvatarBtn').onclick = async () => {
+            if (selectedBase64) {
+                await db.ref('users/' + currentUser.username).update({ avatar: selectedBase64 });
+                currentUser.avatar = selectedBase64;
+                updateUI();
+                showMessage('تم تحديث الصورة الشخصية بنجاح!');
+                modal.remove();
+                renderProfile();
+            } else showMessage('الرجاء اختيار صورة أولاً', true);
+        };
+        document.getElementById('closeAvatarBtn').onclick = () => modal.remove();
+    }
+
+    async function renderClientRequests() {
+        const requests = await getRequestsForUser(currentUser.username, 'client');
+        
+        document.getElementById('appContent').innerHTML = `<div class="container"><button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع</button><h2 style="color: white;">طلباتي</h2><div id="reqList" class="profile-info"></div></div>`;
+        const container = document.getElementById('reqList');
+        if (requests.length === 0) { container.innerHTML = '<p style="text-align: center;">لا توجد طلبات حالياً</p>'; return; }
+        
+        const now = Date.now();
+        const twentyFourHours = 24 * 60 * 60 * 1000;
+        
+        const pending = requests.filter(r => r.status === 'pending');
+        const accepted = requests.filter(r => r.status === 'accepted');
+        const completed = requests.filter(r => r.status === 'completed' && !r.rated && (now - (r.completedAt || 0) < twentyFourHours));
+        const rejected = requests.filter(r => r.status === 'rejected' && (now - (r.rejectedAt || 0) < twentyFourHours));
+        
+        let html = '';
+        
+        if (pending.length) html += '<h3 class="section-title">⏳ طلبات قيد الانتظار</h3>' + pending.map(r => `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>العنوان: ${r.address}</p><p>الحالة: في انتظار موافقة الصيدلية</p></div>`).join('');
+        
+        if (accepted.length) html += '<h3 class="section-title">✅ طلبات قيد التجهيز</h3>' + accepted.map(r => `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>العنوان: ${r.address}</p><p>الحالة: جاري تجهيز الطلب</p></div>`).join('');
+        
+        if (completed.length) {
+            html += '<h3 class="section-title">⭐ طلبات مكتملة - قيد التقييم</h3>';
+            for (let r of completed) {
+                const timeRemaining = Math.ceil((twentyFourHours - (now - r.completedAt)) / (60 * 60 * 1000));
+                html += `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>✅ تم تسليم الدواء بنجاح</p><div class="time-remaining">متاح للتقييم لمدة ${timeRemaining} ساعة</div><button id="rate_${r.id}" class="accept-btn">⭐ تقييم الخدمة</button></div>`;
+            }
+        }
+        
+        if (rejected.length) {
+            html += '<h3 class="section-title">❌ طلبات مرفوضة</h3>';
+            for (let r of rejected) {
+                html += `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>❌ تم رفض الطلب</p>${r.rejectReason ? `<div style="margin-top: 8px;"><i class="fas fa-comment"></i> سبب الرفض: ${r.rejectReason}</div>` : ''}</div>`;
+            }
+        }
+        
+        container.innerHTML = html;
+        
+        for (let r of completed) document.getElementById(`rate_${r.id}`)?.addEventListener('click', () => openRatingModal(r.id, r.pharmacyId));
+    }
+
+    async function renderPharmacyRequests() {
+        const requests = await getRequestsForUser(currentUser.username, 'pharmacy');
+        
+        document.getElementById('appContent').innerHTML = `<div class="container"><button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع</button><h2 style="color: white;">الطلبات الواردة</h2><div id="reqList" class="profile-info"></div></div>`;
+        const container = document.getElementById('reqList');
+        if (requests.length === 0) { container.innerHTML = '<p style="text-align: center;">لا توجد طلبات حالياً</p>'; return; }
+        
+        const now = Date.now();
+        const fiveMinutes = 5 * 60 * 1000;
+        
+        const pending = requests.filter(r => r.status === 'pending');
+        const accepted = requests.filter(r => r.status === 'accepted');
+        const completed = requests.filter(r => r.status === 'completed' && (now - (r.completedAt || 0) < fiveMinutes));
+        const rejected = requests.filter(r => r.status === 'rejected' && (now - (r.rejectedAt || 0) < fiveMinutes));
+        
+        let html = '';
+        
+        for (let r of pending) {
+            const client = await getUserData(r.clientId);
+            html += `<div class="request-item"><div class="request-header"><div class="request-client-avatar" onclick="viewClientProfile('${r.clientId}')">${client?.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div><div><span class="client-name" onclick="viewClientProfile('${r.clientId}')">${client?.username || r.clientId}</span><div class="location-badge" style="margin-top: 4px;">${client?.center || ''} - ${client?.governorate || ''}</div></div></div><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>العنوان:</strong> ${r.address}</p><p><strong>هاتف المريض:</strong> ${r.clientPhone} <button class="call-btn" onclick="window.location.href='tel:${r.clientPhone}'"><i class="fas fa-phone"></i> اتصل</button></p>${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="window.open(this.src)"></div>` : ''}${r.prescriptionNotes ? `<div class="prescription-container"><strong>ملاحظات إضافية:</strong><p>${r.prescriptionNotes}</p></div>` : ''}<div class="flex-buttons"><button id="accept_${r.id}" class="accept-btn"><i class="fas fa-check"></i> قبول الطلب</button><button id="reject_${r.id}" class="reject-btn"><i class="fas fa-times"></i> رفض الطلب</button></div></div>`;
+        }
+        
+        for (let r of accepted) {
+            html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientId}</p><p><strong>العنوان:</strong> ${r.address}</p><button id="complete_${r.id}" class="accept-btn"><i class="fas fa-check-double"></i> تم تسليم الدواء</button></div>`;
+        }
+        
+        if (completed.length) {
+            html += '<h3 class="section-title" style="color: #27ae60;">✅ طلبات مكتملة (سيتم حذفها تلقائياً)</h3>';
+            for (let r of completed) {
+                const timeRemaining = Math.ceil((fiveMinutes - (now - r.completedAt)) / 60000);
+                html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientId}</p><p>✅ تم تسليم الدواء</p><div class="time-remaining">سيتم الحذف بعد ${timeRemaining} دقيقة</div></div>`;
+            }
+        }
+        
+        if (rejected.length) {
+            html += '<h3 class="section-title" style="color: #e74c3c;">❌ طلبات مرفوضة (سيتم حذفها تلقائياً)</h3>';
+            for (let r of rejected) {
+                const timeRemaining = Math.ceil((fiveMinutes - (now - r.rejectedAt)) / 60000);
+                html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientId}</p><p>❌ تم رفض الطلب</p>${r.rejectReason ? `<div style="margin-top: 8px;"><i class="fas fa-comment"></i> السبب: ${r.rejectReason}</div>` : ''}<div class="time-remaining">سيتم الحذف بعد ${timeRemaining} دقيقة</div></div>`;
+            }
+        }
+        
+        container.innerHTML = html;
+        
+        for (let r of pending) {
+            document.getElementById(`accept_${r.id}`)?.addEventListener('click', () => showConfirm('قبول الطلب', 'هل توافق على قبول هذا الطلب؟', async () => { await db.ref('requests/' + r.id).update({ status: 'accepted' }); showMessage('تم قبول الطلب بنجاح!'); renderPharmacyRequests(); updateNotificationCount(); }));
+            document.getElementById(`reject_${r.id}`)?.addEventListener('click', () => openRejectModal(r.id));
+        }
+        for (let r of accepted) document.getElementById(`complete_${r.id}`)?.addEventListener('click', () => showConfirm('إتمام الخدمة', 'هل تم تسليم الدواء للمريض؟', async () => { await db.ref('requests/' + r.id).update({ status: 'completed', completedAt: Date.now() }); showMessage('تم تسليم الدواء بنجاح!'); renderPharmacyRequests(); updateNotificationCount(); }));
+    }
+
+    async function renderPharmacyHome() {
+        const requests = await getRequestsForUser(currentUser.username, 'pharmacy');
+        let completed = 0, rejected = 0, pending = 0, accepted = 0;
+        
+        requests.forEach(req => {
+            if (req.status === 'completed') completed++;
+            else if (req.status === 'rejected') rejected++;
+            else if (req.status === 'pending') pending++;
+            else if (req.status === 'accepted') accepted++;
+        });
+        
+        const latestComments = (currentUser.comments || []).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+        
+        document.getElementById('appContent').innerHTML = `
+            <div class="container">
+                <div style="background: rgba(255,255,255,0.9); border-radius: 15px; padding: 1rem; margin-bottom: 1rem; text-align: center;"><h3><i class="fas fa-map-marker-alt"></i> موقع الصيدلية</h3><p><strong>المحافظة:</strong> ${currentUser.governorate || 'غير محدد'} | <strong>المركز:</strong> ${currentUser.center || 'غير محدد'}</p></div>
+                <h2 style="color: white;"><i class="fas fa-chart-line"></i> لوحة التحكم والإحصائيات</h2>
+                <div class="cards-grid">
+                    <div class="card"><div class="card-avatar">${currentUser.avatar ? `<img src="${currentUser.avatar}">` : '<i class="fas fa-star"></i>'}</div><h3>التقييم العام</h3><p style="font-size:1.5rem;">⭐ ${currentUser.avgRating ? currentUser.avgRating.toFixed(1) : 'لا يوجد'}</p></div>
+                    <div class="card"><div class="card-avatar"><i class="fas fa-users"></i></div><h3>عدد التقييمات</h3><p style="font-size:1.5rem;">${currentUser.ratingCount || 0}</p></div>
+                    <div class="card"><div class="card-avatar"><i class="fas fa-check-circle"></i></div><h3>الطلبات المكتملة</h3><p style="font-size:1.5rem; color:#27ae60;">${completed}</p></div>
+                    <div class="card"><div class="card-avatar"><i class="fas fa-times-circle"></i></div><h3>الطلبات المرفوضة</h3><p style="font-size:1.5rem; color:#e74c3c;">${rejected}</p></div>
+                    <div class="card"><div class="card-avatar"><i class="fas fa-clock"></i></div><h3>قيد الانتظار</h3><p style="font-size:1.5rem; color:#f39c12;">${pending}</p></div>
+                    <div class="card"><div class="card-avatar"><i class="fas fa-play-circle"></i></div><h3>قيد التجهيز</h3><p style="font-size:1.5rem; color:#3498db;">${accepted}</p></div>
+                </div>
+                <div class="profile-info"><h3><i class="fas fa-comment-dots"></i> أحدث التعليقات</h3>${latestComments.length === 0 ? '<p>لا توجد تعليقات بعد</p>' : latestComments.map(c => `<div class="comment-item"><div class="comment-header"><span class="comment-user"><i class="fas fa-user"></i> ${c.username}</span><span class="comment-rating">${'⭐'.repeat(c.rating)}</span></div><div class="comment-text">${c.comment || ''}</div></div>`).join('')}</div>
+            </div>`;
+    }
+
+    function openRequestModal(pharmacyId) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `<div class="modal-content"><h3><i class="fas fa-prescription"></i> طلب دواء</h3><div class="input-group"><i class="fas fa-capsules"></i><input type="text" id="medicineName" placeholder="اسم الدواء"></div><div class="input-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="reqAddress" placeholder="العنوان"></div><div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="reqPhone" placeholder="رقم هاتفك للتواصل"></div><div class="input-group"><label class="upload-btn"><i class="fas fa-camera"></i> رفع روشتة (اختياري) <input type="file" id="prescriptionImage" accept="image/*" class="file-input"></label><div id="imagePreview"></div></div><div class="input-group"><textarea id="prescriptionNotes" placeholder="ملاحظات إضافية (اختياري)..." rows="3"></textarea></div><div class="modal-buttons"><button id="sendReqBtn" class="accept-btn"><i class="fas fa-paper-plane"></i> إرسال الطلب</button><button id="cancelReqBtn" class="reject-btn"><i class="fas fa-times"></i> إلغاء</button></div></div>`;
+        document.body.appendChild(modal);
+        let selectedImage = null;
+        document.getElementById('prescriptionImage').onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (file.size > 2 * 1024 * 1024) { showMessage('الصورة كبيرة جداً (حد أقصى 2MB)', true); return; }
+                const reader = new FileReader();
+                reader.onload = (ev) => { selectedImage = ev.target.result; document.getElementById('imagePreview').innerHTML = `<img src="${selectedImage}" style="max-width:100%;max-height:100px;margin-top:8px;border-radius:8px;">`; };
+                reader.readAsDataURL(file);
+            }
+        };
+        document.getElementById('sendReqBtn').onclick = async () => {
+            const medicineName = document.getElementById('medicineName').value;
+            const address = document.getElementById('reqAddress').value;
+            const phone = document.getElementById('reqPhone').value;
+            const notes = document.getElementById('prescriptionNotes').value;
+            if (!medicineName || !address || !phone) { showMessage('يرجى إدخال اسم الدواء والعنوان ورقم الهاتف', true); return; }
+            const pharmacy = await getUserData(pharmacyId);
+            await db.ref('requests').push({
+                clientId: currentUser.username,
+                pharmacyId: pharmacyId,
+                pharmacyName: pharmacy.pharmacyName || pharmacy.username,
+                medicineName: medicineName,
+                address: address,
+                clientPhone: phone,
+                prescriptionImage: selectedImage,
+                prescriptionNotes: notes,
+                status: 'pending',
+                rated: false,
+                createdAt: Date.now()
+            });
+            showMessage('تم إرسال الطلب بنجاح! سيتم إشعار الصيدلية');
+            modal.remove();
+        };
+        document.getElementById('cancelReqBtn').onclick = () => modal.remove();
+    }
+
+    function openRatingModal(requestId, pharmacyId) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `<div class="modal-content"><h3><i class="fas fa-star"></i> تقييم الصيدلية</h3><div class="rating-input"><label><i class="fas fa-star" style="color:#f39c12;"></i> التقييم</label><select id="rateStars"><option value="5">★★★★★ (ممتاز)</option><option value="4">★★★★☆ (جيد جداً)</option><option value="3">★★★☆☆ (جيد)</option><option value="2">★★☆☆☆ (مقبول)</option><option value="1">★☆☆☆☆ (سيئ)</option></select></div><div class="comment-input"><label><i class="fas fa-comment"></i> تعليقك</label><textarea id="rateComment" placeholder="اكتب تجربتك مع الصيدلية..." rows="3"></textarea></div><div class="modal-buttons"><button id="submitRateBtn" class="accept-btn"><i class="fas fa-paper-plane"></i> إرسال التقييم</button><button id="cancelRateBtn" class="reject-btn"><i class="fas fa-times"></i> إلغاء</button></div></div>`;
+        document.body.appendChild(modal);
+        document.getElementById('submitRateBtn').onclick = async () => {
+            const stars = parseInt(document.getElementById('rateStars').value);
+            const comment = document.getElementById('rateComment').value;
+            const pharmacy = await getUserData(pharmacyId);
+            await db.ref('users/' + pharmacyId).update({
+                ratingSum: (pharmacy.ratingSum||0) + stars,
+                ratingCount: (pharmacy.ratingCount||0) + 1,
+                avgRating: ((pharmacy.ratingSum||0) + stars) / ((pharmacy.ratingCount||0) + 1),
+                comments: [...(pharmacy.comments||[]), { username: currentUser.username, rating: stars, comment, date: new Date().toISOString() }]
+            });
+            await db.ref('requests/' + requestId).update({ rated: true });
+            showMessage('شكراً لتقييمك! تم إضافة تعليقك');
+            modal.remove();
+            renderClientRequests();
+        };
+        document.getElementById('cancelRateBtn').onclick = () => modal.remove();
+    }
+
+    function openRejectModal(requestId) {
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'flex';
+        modal.innerHTML = `<div class="modal-content"><h3><i class="fas fa-ban"></i> رفض الطلب</h3><textarea id="rejectReason" placeholder="سبب الرفض..." rows="4"></textarea><div class="modal-buttons"><button id="confirmRejectBtn" class="accept-btn"><i class="fas fa-check"></i> تأكيد الرفض</button><button id="cancelRejectBtn" class="reject-btn"><i class="fas fa-times"></i> إلغاء</button></div></div>`;
+        document.body.appendChild(modal);
+        document.getElementById('confirmRejectBtn').onclick = async () => {
+            const reason = document.getElementById('rejectReason').value;
+            if (!reason) { showMessage('الرجاء كتابة سبب الرفض', true); return; }
+            await db.ref('requests/' + requestId).update({ status: 'rejected', rejectReason: reason, rejectedAt: Date.now() });
+            showMessage('تم رفض الطلب وإرسال السبب للمريض');
+            modal.remove();
+            renderPharmacyRequests();
+            updateNotificationCount();
+        };
+        document.getElementById('cancelRejectBtn').onclick = () => modal.remove();
+    }
+
+    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
+    function openSidebar() { if (currentUser) { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); } }
+    window.goToHome = () => { renderPage(); closeSidebar(); };
+    
+    document.getElementById('menuBtn').onclick = openSidebar;
+    document.getElementById('closeSidebar').onclick = closeSidebar;
+    document.getElementById('overlay').onclick = closeSidebar;
+    document.getElementById('notificationBell').onclick = () => { closeSidebar(); if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
+    document.getElementById('sideHome').onclick = (e) => { e.preventDefault(); closeSidebar(); renderPage(); };
+    document.getElementById('sideProfile').onclick = (e) => { e.preventDefault(); closeSidebar(); renderProfile(); };
+    document.getElementById('sideRequests').onclick = (e) => { e.preventDefault(); closeSidebar(); if (currentUser?.type === 'client') renderClientRequests(); else if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
+    document.getElementById('sideLogout').onclick = (e) => { e.preventDefault(); closeSidebar(); logout(); };
+    
+    showAuthScreen();
+</script>
+</body>
+  </html>
