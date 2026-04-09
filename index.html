@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* نفس CSS الأصلي بالكامل - لم يتم تغييره */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: linear-gradient(135deg, #0f2b3d 0%, #1b8c5e 50%, #0f2b3d 100%); min-height: 100vh; }
         .navbar { background: rgba(26, 37, 47, 0.95); backdrop-filter: blur(10px); color: white; padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
@@ -169,60 +170,124 @@
         { code: "+971", country: "🇦🇪 الإمارات", name: "الإمارات" }, { code: "+962", country: "🇯🇴 الأردن", name: "الأردن" },
         { code: "+961", country: "🇱🇧 لبنان", name: "لبنان" }, { code: "+965", country: "🇰🇼 الكويت", name: "الكويت" },
         { code: "+973", country: "🇧🇭 البحرين", name: "البحرين" }, { code: "+968", country: "🇴🇲 عمان", name: "عمان" },
-        { code: "+974", country: "🇶🇦 قطر", name: "قطر" }, { code: "+90", country: "🇹🇷 تركيا", name: "تركيا" },
-        { code: "+1", country: "🇺🇸 الولايات المتحدة", name: "الولايات المتحدة" }, { code: "+44", country: "🇬🇧 المملكة المتحدة", name: "المملكة المتحدة" },
-        { code: "+33", country: "🇫🇷 فرنسا", name: "فرنسا" }, { code: "+49", country: "🇩🇪 ألمانيا", name: "ألمانيا" },
-        { code: "+41", country: "🇨🇭 سويسرا", name: "سويسرا" }, { code: "+31", country: "🇳🇱 هولندا", name: "هولندا" },
-        { code: "+32", country: "🇧🇪 بلجيكا", name: "بلجيكا" }, { code: "+34", country: "🇪🇸 إسبانيا", name: "إسبانيا" },
-        { code: "+39", country: "🇮🇹 إيطاليا", name: "إيطاليا" }, { code: "+46", country: "🇸🇪 السويد", name: "السويد" },
-        { code: "+47", country: "🇳🇴 النرويج", name: "النرويج" }, { code: "+45", country: "🇩🇰 الدنمارك", name: "الدنمارك" },
-        { code: "+358", country: "🇫🇮 فنلندا", name: "فنلندا" }, { code: "+353", country: "🇮🇪 أيرلندا", name: "أيرلندا" },
-        { code: "+61", country: "🇦🇺 أستراليا", name: "أستراليا" }, { code: "+64", country: "🇳🇿 نيوزيلندا", name: "نيوزيلندا" },
-        { code: "+81", country: "🇯🇵 اليابان", name: "اليابان" }, { code: "+82", country: "🇰🇷 كوريا الجنوبية", name: "كوريا الجنوبية" },
-        { code: "+86", country: "🇨🇳 الصين", name: "الصين" }, { code: "+91", country: "🇮🇳 الهند", name: "الهند" },
-        { code: "+60", country: "🇲🇾 ماليزيا", name: "ماليزيا" }, { code: "+65", country: "🇸🇬 سنغافورة", name: "سنغافورة" },
-        { code: "+66", country: "🇹🇭 تايلاند", name: "تايلاند" }, { code: "+84", country: "🇻🇳 فيتنام", name: "فيتنام" },
-        { code: "+63", country: "🇵🇭 الفلبين", name: "الفلبين" }, { code: "+92", country: "🇵🇰 باكستان", name: "باكستان" },
-        { code: "+94", country: "🇱🇰 سريلانكا", name: "سريلانكا" }, { code: "+880", country: "🇧🇩 بنغلاديش", name: "بنغلاديش" },
-        { code: "+234", country: "🇳🇬 نيجيريا", name: "نيجيريا" }, { code: "+27", country: "🇿🇦 جنوب أفريقيا", name: "جنوب أفريقيا" },
-        { code: "+212", country: "🇲🇦 المغرب", name: "المغرب" }, { code: "+216", country: "🇹🇳 تونس", name: "تونس" },
-        { code: "+213", country: "🇩🇿 الجزائر", name: "الجزائر" }, { code: "+218", country: "🇱🇾 ليبيا", name: "ليبيا" },
-        { code: "+249", country: "🇸🇩 السودان", name: "السودان" }, { code: "+964", country: "🇮🇶 العراق", name: "العراق" },
-        { code: "+963", country: "🇸🇾 سوريا", name: "سوريا" }, { code: "+970", country: "🇵🇸 فلسطين", name: "فلسطين" },
-        { code: "+998", country: "🇺🇿 أوزبكستان", name: "أوزبكستان" }, { code: "+7", country: "🇷🇺 روسيا", name: "روسيا" },
-        { code: "+380", country: "🇺🇦 أوكرانيا", name: "أوكرانيا" }
+        { code: "+974", country: "🇶🇦 قطر", name: "قطر" }, { code: "+90", country: "🇹🇷 تركيا", name: "تركيا" }
     ];
 
-    const egyptGovernorates = {
-        "القاهرة": ["الزيتون", "الأميرية", "المطرية", "عين شمس", "مدينة نصر", "مصر الجديدة", "الوايلي", "باب الشعرية", "بولاق", "جاردن سيتي", "وسط البلد", "العباسية", "شبرا", "روض الفرج", "الساحل", "الخليفة", "المقطم", "التبين", "حلوان", "المعادي", "دار السلام", "البساتين", "الظاهر", "منشأة ناصر"],
-        "الإسكندرية": ["المنتزه", "شرق", "وسط", "غرب", "الجمرك", "العجمي", "برج العرب", "الدخيلة", "مينا البصل", "باكوس", "سيدي بشر", "السيوف", "كرموز", "محرم بك", "العطارين", "الأنفوشي", "الورديان", "القباري"],
-        "الجيزة": ["العجوزة", "الدقي", "الهرم", "بولاق الدكرور", "أوسيم", "كرداسة", "البدرشين", "الصف", "العياط", "أبو النمرس", "منشأة القناطر", "الوراق", "إمبابة", "المهندسين", "الزمالك", "الرحاب", "الشيخ زايد", "السادس من أكتوبر"],
-        "الشرقية": ["الزقازيق", "العاشر من رمضان", "بلبيس", "منيا القمح", "أبو حماد", "ههيا", "مشتول السوق", "ديرب نجم", "فاقوس", "أبو كبير", "كفر صقر", "الحسينية", "صان الحجر", "الإبراهيمية", "القرين", "أولاد صقر"],
-        "الدقهلية": ["المنصورة", "طلخا", "المحلة", "ميت غمر", "أجا", "تمي الأمديد", "دكرنس", "السنبلاوين", "نبروه", "شربين", "بلقاس", "بني عبيد", "منية النصر", "ميت سلسيل", "المنزلة", "الجمالية"],
-        "البحيرة": ["دمنهور", "رشيد", "إيتاي البارود", "كوم حمادة", "المحمودية", "حوش عيسى", "أبو حمص", "شبراخيت", "الدلنجات", "بدر", "النوبارية الجديدة", "وادي النطرون", "أبو المطامير", "الرحمانية", "إدكو"],
-        "الغربية": ["طنطا", "المحلة الكبرى", "كفر الزيات", "زفتى", "بسيون", "قطور", "سمنود", "السنطة"],
-        "المنوفية": ["شبين الكوم", "منوف", "السادات", "تلا", "بركة السبع", "أشمون", "الباجور", "قويسنا", "سرس الليان"],
-        "القليوبية": ["بنها", "شبرا الخيمة", "قليوب", "الخانكة", "كفر شكر", "طوخ", "قها", "العبور", "الخصوص"],
-        "الفيوم": ["الفيوم", "سنورس", "طامية", "إبشواي", "يوسف الصديق", "أطسا"],
-        "بني سويف": ["بني سويف", "الواسطى", "ببا", "الفشن", "سمسطا", "ناصر", "إهناسيا"],
-        "المنيا": ["المنيا", "ملوي", "أبو قرقاص", "مغاغة", "العدوة", "بني مزار", "مطاي", "سمالوط", "دير مواس"],
-        "أسيوط": ["أسيوط", "ديروط", "القوصية", "أبنوب", "منفلوط", "الفتح", "البداري", "ساحل سليم", "أبو تيج", "غرب أسيوط"],
-        "سوهاج": ["سوهاج", "أخميم", "طهطا", "البلينا", "جرجا", "المراغة", "دار السلام", "المنشأة", "ساقلته", "العسيرات"],
-        "قنا": ["قنا", "نقادة", "قفط", "الوقف", "فرشوط", "نجع حمادي", "دشنا", "أبو تشت"],
-        "الأقصر": ["الأقصر", "البياضية", "القرنة", "إسنا", "أرمنت", "الطود", "الزينية"],
-        "أسوان": ["أسوان", "إدفو", "السباعية", "كوم أمبو", "نصر النوبة", "دراو", "كلابشة"],
-        "البحر الأحمر": ["الغردقة", "رأس غارب", "سفاجا", "القصير", "مرسى علم", "حلايب", "شلاتين"],
+    // البيانات الافتراضية للمحافظات والمراكز
+    const defaultGovernorates = {
+        "القاهرة": ["15 مايو", "الأزبكية", "البساتين", "التبين", "الزاوية الحمراء", "الزيتون", "الساحل", "السلام", "الشرابية", "المطرية", "المعادي", "المعصرة", "المقطم", "المنيل", "الوايلي", "باب الشعرية", "بولاق", "حدائق القبة", "حلوان", "دار السلام", "شبرا", "طرة", "عابدين", "عين شمس", "مدينة نصر", "مصر الجديدة", "مصر القديمة", "منشأة ناصر", "وسط القاهرة"],
+        "الجيزة": ["أبو النمرس", "أوسيم", "البدرشين", "الحوامدية", "الدقي", "الوراق", "إمبابة", "بولاق الدكرور", "كرداسة", "العجوزة", "المهندسين", "الهرم", "فيصل", "الشيخ زايد", "السادس من أكتوبر", "حدائق أكتوبر", "الواحات البحرية", "العياط", "الصف", "أطفيح"],
+        "الإسكندرية": ["الإبراهيمية", "الأزاريطة", "الجمرك", "الحضرة", "الدخيلة", "السيوف", "العامرية", "العطارين", "المنشية", "المنتزه", "المندرة", "المكس", "باب شرق", "برج العرب", "جليم", "رأس التين", "سابا باشا", "سان ستيفانو", "سبورتنج", "سموحة", "شدس", "العصافرة", "العجمي", "بحري", "كرموز", "محرم بك", "محطة الرمل", "ميامي", "فيكتوريا", "أبو قير"],
+        "الدقهلية": ["المنصورة", "طلخا", "ميت غمر", "دكرنس", "أجا", "منية النصر", "السنبلاوين", "الكردي", "بني عبيد", "المنزلة", "تمي الأمديد", "الجمالية", "شربين", "المطرية", "بلقاس", "ميت سلسيل", "جمصة", "محلة دمنة", "نبروة"],
+        "الشرقية": ["الزقازيق", "منيا القمح", "بلبيس", "مشتول السوق", "أبو حماد", "ههيا", "أبو كبير", "فاقوس", "الإبراهيمية", "ديرب نجم", "كفر صقر", "أولاد صقر", "الحسينية", "صان الحجر", "منشأة أبو عمر"],
+        "البحيرة": ["دمنهور", "كفر الدوار", "رشيد", "إدكو", "أبو المطامير", "أبو حمص", "الدلنجات", "المحمودية", "الرحمانية", "إيتاي البارود", "حوش عيسى", "شبراخيت", "كوم حمادة", "بدر", "وادي النطرون", "النوبارية الجديدة"],
+        "الغربية": ["طنطا", "المحلة الكبرى", "كفر الزيات", "السنطة", "قطور", "بسيون", "سمنود", "زفتى"],
+        "المنوفية": ["شبين الكوم", "مدينة السادات", "منوف", "سرس الليان", "أشمون", "الباجور", "قويسنا", "بركة السبع", "تلا", "الشهداء"],
+        "القليوبية": ["بنها", "قليوب", "القناطر الخيرية", "الخانكة", "كفر شكر", "طوخ", "قها", "العبور", "الخصوص", "شبين القناطر"],
+        "الفيوم": ["الفيوم", "سنورس", "إطسا", "طامية", "يوسف الصديق", "أبشواي"],
+        "بني سويف": ["بني سويف", "الواسطى", "ناصر", "إهناسيا", "ببا", "سمسطا", "الفشن"],
+        "المنيا": ["المنيا", "العدوة", "مغاغة", "بني مزار", "مطاي", "سمالوط", "أبو قرقاص", "ملوي", "دير مواس"],
+        "أسيوط": ["أسيوط", "ديروط", "القوصية", "منفلوط", "أبنوب", "أبو تيج", "الغنايم", "ساحل سليم", "البداري", "صدفا", "الفتح"],
+        "سوهاج": ["سوهاج", "أخميم", "البلينا", "المراغة", "المنشأة", "دار السلام", "جرجا", "جهينة", "ساقلته", "طما", "طهطا"],
+        "قنا": ["قنا", "أبو تشت", "نجع حمادي", "دشنا", "الوقف", "قفط", "نقادة", "فرشوط", "قوص"],
+        "الأقصر": ["الأقصر", "الزينية", "البياضية", "القرنة", "أرمنت", "الطود", "إسنا"],
+        "أسوان": ["أسوان", "دراو", "كوم أمبو", "نصر النوبة", "إدفو", "الرديسية", "البصيلية", "السباعية", "أبو سمبل"],
+        "دمياط": ["دمياط", "دمياط الجديدة", "رأس البر", "فارسكور", "الزرقا", "كفر سعد", "عزبة البرج"],
+        "بورسعيد": ["بورسعيد", "بورفؤاد", "الضواحي", "المناخ", "العرب", "الزهور", "الشرق"],
+        "الإسماعيلية": ["الإسماعيلية", "التل الكبير", "القنطرة شرق", "القنطرة غرب", "فايد", "أبو صوير"],
+        "السويس": ["السويس", "الجناين", "عتاقة", "فيصل"],
         "شمال سيناء": ["العريش", "الشيخ زويد", "رفح", "بئر العبد", "الحسنة", "نخل"],
-        "جنوب سيناء": ["الطور", "شرم الشيخ", "دهب", "نويبع", "سانت كاترين", "أبو رديس", "أبو زنيمة"],
-        "الوادي الجديد": ["الخارجة", "الداخلة", "الفرافرة", "بلاط", "باريس"],
-        "مطروح": ["مرسى مطروح", "الضبعة", "الحمام", "العلمين", "النجيلة", "سيوة", "براني"],
-        "دمياط": ["دمياط", "فارسكور", "كفر سعد", "الزرقا", "رأس البر", "عزبة البرج", "كفر البطيخ"],
-        "كفر الشيخ": ["كفر الشيخ", "دسوق", "فوه", "مطوبس", "بيلا", "سيدي سالم", "الرياض", "قلين", "بلطيم", "الحامول"],
-        "الإسماعيلية": ["الإسماعيلية", "فايد", "القنطرة شرق", "القنطرة غرب", "التل الكبير", "أبو صوير"],
-        "السويس": ["السويس", "الأربعين", "عتاقة", "الجنوب", "فيصل"],
-        "بورسعيد": ["بورسعيد", "الزهور", "العرب", "الضواحي", "المناخ", "بورفؤاد"]
+        "جنوب سيناء": ["الطور", "شرم الشيخ", "دهب", "نويبع", "رأس سدر", "أبو رديس", "سانت كاترين", "طابا"],
+        "مطروح": ["مرسى مطروح", "الحمام", "العلمين", "الضبعة", "النجيلة", "سيدي براني", "السلوم", "سيوة"],
+        "الوادي الجديد": ["الخارجة", "الداخلة", "الفرافرة", "باريس", "بلاط"],
+        "البحر الأحمر": ["الغردقة", "رأس غارب", "سفاجا", "القصير", "مرسى علم", "الشلاتين", "حلايب"]
     };
 
+    // ========== دوال Firebase للمدن والقرى ==========
+    
+    // تهيئة البيانات الافتراضية في Firebase إذا لم تكن موجودة
+    async function initLocationsData() {
+        try {
+            const snap = await db.ref('locations/cities').once('value');
+            if (!snap.exists()) {
+                console.log("تهيئة بيانات المدن الافتراضية...");
+                const citiesData = {};
+                for (let gov in defaultGovernorates) {
+                    citiesData[gov] = {};
+                    defaultGovernorates[gov].forEach(center => {
+                        citiesData[gov][center] = [];
+                    });
+                }
+                await db.ref('locations/cities').set(citiesData);
+                console.log("✅ تم تهيئة بيانات المدن");
+            }
+        } catch (e) {
+            console.error("خطأ في تهيئة البيانات:", e);
+        }
+    }
+
+    // حفظ مدينة/قرية جديدة في Firebase
+    async function saveNewCity(governorate, center, cityName) {
+        if (!governorate || !center || !cityName) return false;
+        try {
+            const cityRef = db.ref(`locations/cities/${governorate}/${center}`);
+            const snap = await cityRef.once('value');
+            let cities = snap.exists() ? snap.val() : [];
+            
+            if (!cities.includes(cityName)) {
+                cities.push(cityName);
+                cities.sort();
+                await cityRef.set(cities);
+                console.log(`✅ تم حفظ "${cityName}" في ${governorate} - ${center}`);
+                return true;
+            }
+            return true;
+        } catch (e) {
+            console.error("خطأ في حفظ المدينة:", e);
+            return false;
+        }
+    }
+
+    // جلب المدن لمركز معين من Firebase
+    async function getCitiesFromFirebase(governorate, center) {
+        if (!governorate || !center) return [];
+        try {
+            const snap = await db.ref(`locations/cities/${governorate}/${center}`).once('value');
+            return snap.exists() ? snap.val() : [];
+        } catch (e) {
+            console.error("خطأ في جلب المدن:", e);
+            return [];
+        }
+    }
+
+    // تحديث قائمة المدن في القائمة المنسدلة
+    async function updateCityOptions(governorateSelectId, centerSelectId, citySelectId, newCityContainerId, selectedCity = '') {
+        const governorate = document.getElementById(governorateSelectId)?.value;
+        const center = document.getElementById(centerSelectId)?.value;
+        const citySelect = document.getElementById(citySelectId);
+        const newCityContainer = document.getElementById(newCityContainerId);
+        
+        if (!citySelect) return;
+        
+        if (!governorate || !center) {
+            citySelect.innerHTML = '<option value="">اختر المركز أولاً</option>';
+            citySelect.disabled = true;
+            if (newCityContainer) newCityContainer.style.display = 'none';
+            return;
+        }
+        
+        const cities = await getCitiesFromFirebase(governorate, center);
+        let options = '<option value="">اختر المدينة/القرية</option>';
+        cities.forEach(city => {
+            options += `<option value="${city}" ${selectedCity === city ? 'selected' : ''}>${city}</option>`;
+        });
+        options += '<option value="__other__" style="color: #1abc9c; font-weight: bold;">➕ أخرى (إضافة مدينة/قرية جديدة)</option>';
+        
+        citySelect.innerHTML = options;
+        citySelect.disabled = false;
+    }
+
+    // ========== دوال مساعدة ==========
     function showMessage(message, isError = false) {
         const existing = document.querySelector('.sweet-message');
         if (existing) existing.remove();
@@ -248,12 +313,18 @@
         window.open(`https://wa.me/${number}`, '_blank');
     }
 
+    // تحديث قائمة المراكز (من البيانات المحلية الافتراضية)
     function updateCenterOptions(governorateSelectId, centerSelectId, selectedCenter = '') {
-        const governorate = document.getElementById(governorateSelectId).value;
+        const governorate = document.getElementById(governorateSelectId)?.value;
         const centerSelect = document.getElementById(centerSelectId);
-        if (governorate && egyptGovernorates[governorate]) {
-            centerSelect.innerHTML = '<option value="">اختر المركز</option>' + 
-                egyptGovernorates[governorate].map(center => `<option value="${center}" ${selectedCenter === center ? 'selected' : ''}>${center}</option>`).join('');
+        if (!centerSelect) return;
+        
+        if (governorate && defaultGovernorates[governorate]) {
+            let options = '<option value="">اختر المركز</option>';
+            defaultGovernorates[governorate].forEach(center => {
+                options += `<option value="${center}" ${selectedCenter === center ? 'selected' : ''}>${center}</option>`;
+            });
+            centerSelect.innerHTML = options;
             centerSelect.disabled = false;
         } else {
             centerSelect.innerHTML = '<option value="">اختر المحافظة أولاً</option>';
@@ -261,8 +332,13 @@
         }
     }
 
-    // ========== تحسينات قاعدة البيانات: جلب البيانات بتصفية مباشرة ==========
-    async function getAllPharmaciesByCenter(center) {
+    async function getUserData(username) {
+        const snap = await db.ref('users/' + username).once('value');
+        return snap.val();
+    }
+
+    async function getAllPharmaciesByCenter(center, city = '') {
+        // جلب الصيدليات حسب المركز والمدينة
         const snap = await db.ref('users')
             .orderByChild('center')
             .equalTo(center)
@@ -272,15 +348,13 @@
         snap.forEach(child => {
             const user = child.val();
             if (user.type === 'pharmacy') {
-                pharmacies.push({ username: child.key, ...user });
+                // إذا تم تحديد مدينة، نفلتر حسب المدينة أيضاً
+                if (!city || user.city === city) {
+                    pharmacies.push({ username: child.key, ...user });
+                }
             }
         });
         return pharmacies;
-    }
-
-    async function getUserData(username) {
-        const snap = await db.ref('users/' + username).once('value');
-        return snap.val();
     }
 
     async function getRequestsForUser(username, type) {
@@ -299,7 +373,6 @@
 
     async function cleanupOldRequests() {
         if (!currentUser) return;
-        
         const now = Date.now();
         const fiveMinutes = 5 * 60 * 1000;
         const twentyFourHours = 24 * 60 * 60 * 1000;
@@ -311,16 +384,11 @@
             const completedAt = req.completedAt || req.rejectedAt;
             if (completedAt) {
                 const timeDiff = now - completedAt;
-                
                 if (currentUser.type === 'pharmacy' && (req.status === 'completed' || req.status === 'rejected')) {
-                    if (timeDiff >= fiveMinutes) {
-                        updates[req.id] = null;
-                    }
+                    if (timeDiff >= fiveMinutes) updates[req.id] = null;
                 }
                 else if (currentUser.type === 'client' && (req.status === 'completed' || req.status === 'rejected')) {
-                    if (timeDiff >= twentyFourHours) {
-                        updates[req.id] = null;
-                    }
+                    if (timeDiff >= twentyFourHours) updates[req.id] = null;
                 }
             }
         }
@@ -335,11 +403,6 @@
         cleanupInterval = setInterval(async () => {
             if (currentUser) {
                 await cleanupOldRequests();
-                const currentView = document.querySelector('#reqList');
-                if (currentView) {
-                    if (currentUser.type === 'client') renderClientRequests();
-                    else if (currentUser.type === 'pharmacy') renderPharmacyRequests();
-                }
             }
         }, 60000);
     }
@@ -349,7 +412,6 @@
         if (!client) { showMessage('المستخدم غير موجود', true); return; }
         const displayName = client.type === 'pharmacy' ? (client.pharmacyName || client.username) : client.username;
         
-        // جلب تعليقات المستخدم على الصيدليات
         const allPharmaciesSnap = await db.ref('users').orderByChild('type').equalTo('pharmacy').once('value');
         const userComments = [];
         allPharmaciesSnap.forEach(pharmacySnap => {
@@ -375,7 +437,7 @@
                 <div class="profile-info">
                     <div class="profile-header">
                         <div class="profile-avatar">${client.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div>
-                        <div><h2>${displayName}</h2><p>${client.type === 'client' ? '📋 مريض' : '💊 صيدلية'}</p><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${client.center || 'غير محدد'} - ${client.governorate || 'غير محدد'}</div></div>
+                        <div><h2>${displayName}</h2><p>${client.type === 'client' ? '📋 مريض' : '💊 صيدلية'}</p><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${client.city || ''} - ${client.center || ''}</div></div>
                     </div>
                     <h3><i class="fas fa-info-circle"></i> معلومات</h3>
                     <p>${client.bio || 'لا توجد معلومات'}</p>
@@ -409,8 +471,13 @@
             snapshot.forEach(child => { userData = child.val(); });
             if (userData && userData.password === password) {
                 currentUser = { username: username, ...userData };
-                if (rememberMe) { localStorage.setItem('rememberedUser', username); localStorage.setItem('rememberedPass', password); } 
-                else { localStorage.removeItem('rememberedUser'); localStorage.removeItem('rememberedPass'); }
+                if (rememberMe) { 
+                    localStorage.setItem('rememberedUser', username); 
+                    localStorage.setItem('rememberedPass', password); 
+                } else {
+                    localStorage.removeItem('rememberedUser'); 
+                    localStorage.removeItem('rememberedPass');
+                }
                 updateUI();
                 renderPage();
                 startNotifications();
@@ -421,15 +488,19 @@
         } else { showMessage('اسم المستخدم غير موجود', true); return false; }
     }
 
-    async function registerUser(username, password, type, pharmacyName, phone, whatsappCode, whatsappNumber, governorate, center) {
+    async function registerUser(username, password, type, pharmacyName, phone, whatsappCode, whatsappNumber, governorate, center, city) {
         const snapshot = await db.ref('users').orderByChild('username').equalTo(username).once('value');
         if (snapshot.exists()) { showMessage('اسم المستخدم موجود بالفعل', true); return false; }
+        
         const fullWhatsapp = whatsappCode + whatsappNumber;
         const userData = {
             username, password, type, avatar: '', ratingSum: 0, ratingCount: 0, avgRating: 0, comments: [],
             bio: type === 'pharmacy' ? 'صيدلية موثوقة تقدم خدمات دوائية ممتازة' : 'مريض يبحث عن أدويته',
-            createdAt: new Date().toISOString(), governorate, center
+            createdAt: new Date().toISOString(), 
+            governorate, center, city,
+            governorate_center: `${governorate}_${center}`
         };
+        
         if (type === 'pharmacy') {
             if (!phone || !pharmacyName) { showMessage('اسم الصيدلية ورقم الهاتف مطلوبان', true); return false; }
             userData.pharmacyName = pharmacyName;
@@ -438,6 +509,7 @@
             userData.whatsappNumber = whatsappNumber;
             userData.whatsapp = fullWhatsapp;
         }
+        
         await db.ref('users/' + username).set(userData);
         currentUser = { username: username, ...userData };
         updateUI();
@@ -503,7 +575,7 @@
     }
 
     function renderAuthForm(type) {
-        const governorateOptions = Object.keys(egyptGovernorates).map(g => `<option value="${g}">${g}</option>`).join('');
+        const governorateOptions = Object.keys(defaultGovernorates).map(g => `<option value="${g}">${g}</option>`).join('');
         const countryOptions = countryCodes.map(c => `<option value="${c.code}">${c.country} ${c.code}</option>`).join('');
         
         if (type === 'login') {
@@ -538,6 +610,8 @@
                 <div class="input-group"><select id="regType"><option value="client">📋 مريض</option><option value="pharmacy">💊 صيدلية</option></select></div>
                 <div class="location-group"><label><i class="fas fa-city"></i> المحافظة</label><select id="regGovernorate" class="location-select">${governorateOptions}</select></div>
                 <div class="location-group"><label><i class="fas fa-map-marker-alt"></i> المركز</label><select id="regCenter" class="location-select" disabled><option value="">اختر المحافظة أولاً</option></select></div>
+                <div class="location-group"><label><i class="fas fa-home"></i> المدينة/القرية</label><select id="regCity" class="location-select" disabled><option value="">اختر المركز أولاً</option></select></div>
+                <div id="newCityContainer" style="display: none;" class="input-group"><i class="fas fa-plus-circle"></i><input type="text" id="newCityInput" placeholder="أدخل اسم المدينة/القرية الجديدة"></div>
                 <div id="pharmacyFields" style="display: none;">
                     <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="phoneNumber" placeholder="رقم الهاتف للاتصال"></div>
                     <div class="whatsapp-wrapper"><select id="whatsappCode">${countryOptions}</select><input type="tel" id="whatsappNumber" placeholder="رقم الواتساب"></div>
@@ -550,7 +624,25 @@
                 input.type = input.type === 'password' ? 'text' : 'password';
                 this.classList.toggle('fa-eye-slash');
             });
-            document.getElementById('regGovernorate').addEventListener('change', () => updateCenterOptions('regGovernorate', 'regCenter'));
+            
+            // ربط الأحداث
+            document.getElementById('regGovernorate').addEventListener('change', function() {
+                updateCenterOptions('regGovernorate', 'regCenter');
+                document.getElementById('regCity').innerHTML = '<option value="">اختر المركز أولاً</option>';
+                document.getElementById('regCity').disabled = true;
+                document.getElementById('newCityContainer').style.display = 'none';
+            });
+            
+            document.getElementById('regCenter').addEventListener('change', async function() {
+                await updateCityOptions('regGovernorate', 'regCenter', 'regCity', 'newCityContainer');
+                document.getElementById('newCityContainer').style.display = 'none';
+            });
+            
+            document.getElementById('regCity').addEventListener('change', function() {
+                const citySelect = document.getElementById('regCity');
+                document.getElementById('newCityContainer').style.display = citySelect.value === '__other__' ? 'block' : 'none';
+            });
+            
             document.getElementById('regType').onchange = () => {
                 const isPharmacy = document.getElementById('regType').value === 'pharmacy';
                 document.getElementById('pharmacyFields').style.display = isPharmacy ? 'block' : 'none';
@@ -563,10 +655,13 @@
                 const type = document.getElementById('regType').value;
                 const governorate = document.getElementById('regGovernorate').value;
                 const center = document.getElementById('regCenter').value;
-                let pharmacyName = '', phone = '', whatsappCode = '', whatsappNumber = '';
+                let city = document.getElementById('regCity').value;
+                
                 if (!username || !password) { showMessage('يرجى إدخال اسم المستخدم وكلمة السر', true); return; }
                 if (!governorate) { showMessage('يرجى اختيار المحافظة', true); return; }
                 if (!center) { showMessage('يرجى اختيار المركز', true); return; }
+                
+                let pharmacyName = '', phone = '', whatsappCode = '', whatsappNumber = '';
                 if (type === 'pharmacy') {
                     pharmacyName = document.getElementById('regPharmacyName').value.trim();
                     phone = document.getElementById('phoneNumber').value;
@@ -576,7 +671,23 @@
                     if (!phone) { showMessage('رقم الهاتف مطلوب', true); return; }
                     if (!whatsappNumber) { showMessage('رقم الواتساب مطلوب', true); return; }
                 }
-                await registerUser(username, password, type, pharmacyName, phone, whatsappCode, whatsappNumber, governorate, center);
+                
+                if (city === '__other__') {
+                    const newCity = document.getElementById('newCityInput').value.trim();
+                    if (!newCity) { showMessage('الرجاء إدخال اسم المدينة/القرية الجديدة', true); return; }
+                    const saved = await saveNewCity(governorate, center, newCity);
+                    if (saved) {
+                        city = newCity;
+                        showMessage('تم إضافة المدينة/القرية بنجاح! ستظهر للمستخدمين الآخرين');
+                    } else {
+                        showMessage('فشل في حفظ المدينة/القرية الجديدة', true);
+                        return;
+                    }
+                } else if (!city) {
+                    showMessage('الرجاء اختيار المدينة/القرية', true); return;
+                }
+                
+                await registerUser(username, password, type, pharmacyName, phone, whatsappCode, whatsappNumber, governorate, center, city);
             };
             document.getElementById('switchToLogin').onclick = (e) => { e.preventDefault(); renderAuthForm('login'); };
         }
@@ -589,15 +700,15 @@
     }
 
     async function renderClientHome() {
-        const pharmacies = await getAllPharmaciesByCenter(currentUser.center);
+        const pharmacies = await getAllPharmaciesByCenter(currentUser.center, currentUser.city);
         document.getElementById('appContent').innerHTML = `
             <div class="container">
                 <div style="background: rgba(255,255,255,0.9); border-radius: 15px; padding: 1rem; margin-bottom: 1rem; text-align: center;">
                     <h3><i class="fas fa-map-marker-alt"></i> موقعك الحالي</h3>
-                    <p><strong>المحافظة:</strong> ${currentUser.governorate || 'غير محدد'} | <strong>المركز:</strong> ${currentUser.center || 'غير محدد'}</p>
-                    <p style="color: #27ae60;">✨ تظهر لك الصيدليات القريبة من مركزك فقط</p>
+                    <p><strong>المحافظة:</strong> ${currentUser.governorate || 'غير محدد'} | <strong>المركز:</strong> ${currentUser.center || 'غير محدد'} | <strong>المدينة/القرية:</strong> ${currentUser.city || 'غير محدد'}</p>
+                    <p style="color: #27ae60;">✨ تظهر لك الصيدليات في ${currentUser.city || currentUser.center} فقط</p>
                 </div>
-                <h2 style="color: white;">الصيدليات في ${currentUser.center}</h2>
+                <h2 style="color: white;">الصيدليات في ${currentUser.city || currentUser.center}</h2>
                 <div class="input-group" style="background: white; border-radius: 50px;"><i class="fas fa-search"></i><input type="text" id="searchInput" placeholder="بحث باسم الصيدلية..." style="border: none;"></div>
                 <div id="pharmaciesGrid" class="cards-grid"></div>
             </div>`;
@@ -611,14 +722,14 @@
     function displayPharmacies(list) {
         const grid = document.getElementById('pharmaciesGrid');
         if (!grid) return;
-        if (list.length === 0) { grid.innerHTML = '<p style="color: white; text-align: center;">لا توجد صيدليات في مركزك حالياً</p>'; return; }
+        if (list.length === 0) { grid.innerHTML = '<p style="color: white; text-align: center;">لا توجد صيدليات في منطقتك حالياً</p>'; return; }
         grid.innerHTML = list.map(p => `
             <div class="card" onclick="viewPharmacy('${p.username}')">
                 <div class="card-avatar">${p.avatar ? `<img src="${p.avatar}">` : '<i class="fas fa-hospital-user"></i>'}</div>
                 <h3>${p.pharmacyName || p.username}</h3>
                 <div class="rating">⭐ ${p.avgRating ? p.avgRating.toFixed(1) : 'جديد'} (${p.ratingCount || 0})</div>
                 <span class="badge"><i class="fas fa-pills"></i> صيدلية</span>
-                <div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${p.center} - ${p.governorate}</div>
+                <div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${p.city || p.center} - ${p.center}</div>
                 <p><i class="fas fa-phone"></i> ${p.phone || 'غير متاح'}</p>
             </div>`).join('');
     }
@@ -636,7 +747,7 @@
                 <div class="profile-info">
                     <div class="profile-header">
                         <div class="profile-avatar">${pharmacy.avatar ? `<img src="${pharmacy.avatar}">` : '<i class="fas fa-hospital-user"></i>'}</div>
-                        <div><h2>${pharmacyDisplayName}</h2><p class="rating">⭐ ${pharmacy.avgRating ? pharmacy.avgRating.toFixed(1) : 'لا يوجد تقييمات'} (${pharmacy.ratingCount || 0})</p><span class="badge"><i class="fas fa-pills"></i> صيدلية</span><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${pharmacy.center} - ${pharmacy.governorate}</div></div>
+                        <div><h2>${pharmacyDisplayName}</h2><p class="rating">⭐ ${pharmacy.avgRating ? pharmacy.avgRating.toFixed(1) : 'لا يوجد تقييمات'} (${pharmacy.ratingCount || 0})</p><span class="badge"><i class="fas fa-pills"></i> صيدلية</span><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${pharmacy.city || pharmacy.center} - ${pharmacy.center}</div></div>
                     </div>
                     <p><i class="fas fa-phone"></i> ${pharmacy.phone}</p>
                     <p><i class="fab fa-whatsapp"></i> ${whatsappDisplay}</p>
@@ -671,7 +782,7 @@
 
     async function renderProfile() {
         const countryOptions = countryCodes.map(c => `<option value="${c.code}" ${currentUser.whatsappCode === c.code ? 'selected' : ''}>${c.country} ${c.code}</option>`).join('');
-        const governorateOptions = Object.keys(egyptGovernorates).map(g => `<option value="${g}" ${currentUser.governorate === g ? 'selected' : ''}>${g}</option>`).join('');
+        const governorateOptions = Object.keys(defaultGovernorates).map(g => `<option value="${g}" ${currentUser.governorate === g ? 'selected' : ''}>${g}</option>`).join('');
         
         document.getElementById('appContent').innerHTML = `
             <div class="container">
@@ -685,6 +796,8 @@
                         <div class="input-group"><i class="fas fa-info-circle"></i><textarea id="editBio" placeholder="السيرة الذاتية" rows="3">${currentUser.bio || ''}</textarea></div>
                         <div class="location-group"><label><i class="fas fa-city"></i> المحافظة</label><select id="editGovernorate" class="location-select">${governorateOptions}</select></div>
                         <div class="location-group"><label><i class="fas fa-map-marker-alt"></i> المركز</label><select id="editCenter" class="location-select" disabled><option value="">اختر المحافظة أولاً</option></select></div>
+                        <div class="location-group"><label><i class="fas fa-home"></i> المدينة/القرية</label><select id="editCity" class="location-select" disabled><option value="">اختر المركز أولاً</option></select></div>
+                        <div id="newCityContainerEdit" style="display: none;" class="input-group"><i class="fas fa-plus-circle"></i><input type="text" id="newCityInputEdit" placeholder="أدخل اسم المدينة/القرية الجديدة"></div>
                         ${currentUser.type === 'pharmacy' ? `
                             <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="editPhone" value="${currentUser.phone || ''}" placeholder="رقم الهاتف"></div>
                             <div class="whatsapp-wrapper"><select id="editWhatsappCode">${countryOptions}</select><input type="tel" id="editWhatsappNumber" value="${currentUser.whatsappNumber || ''}" placeholder="رقم الواتساب"></div>
@@ -694,16 +807,59 @@
                 </div>
             </div>`;
         
-        if (currentUser.center) setTimeout(() => updateCenterOptions('editGovernorate', 'editCenter', currentUser.center), 100);
-        document.getElementById('editGovernorate').addEventListener('change', () => updateCenterOptions('editGovernorate', 'editCenter'));
+        // تحميل المراكز والمدن الحالية
+        if (currentUser.governorate) {
+            updateCenterOptions('editGovernorate', 'editCenter', currentUser.center);
+            if (currentUser.center) {
+                await updateCityOptions('editGovernorate', 'editCenter', 'editCity', 'newCityContainerEdit', currentUser.city);
+            }
+        }
+        
+        // ربط الأحداث
+        document.getElementById('editGovernorate').addEventListener('change', function() {
+            updateCenterOptions('editGovernorate', 'editCenter');
+            document.getElementById('editCity').innerHTML = '<option value="">اختر المركز أولاً</option>';
+            document.getElementById('editCity').disabled = true;
+            document.getElementById('newCityContainerEdit').style.display = 'none';
+        });
+        
+        document.getElementById('editCenter').addEventListener('change', async function() {
+            await updateCityOptions('editGovernorate', 'editCenter', 'editCity', 'newCityContainerEdit');
+            document.getElementById('newCityContainerEdit').style.display = 'none';
+        });
+        
+        document.getElementById('editCity').addEventListener('change', function() {
+            const citySelect = document.getElementById('editCity');
+            document.getElementById('newCityContainerEdit').style.display = citySelect.value === '__other__' ? 'block' : 'none';
+        });
+        
         document.getElementById('avatarClick').onclick = () => openAvatarModal();
+        
         document.getElementById('saveProfileBtn').onclick = async () => {
             const newUsername = document.getElementById('editUsername').value.trim();
             const newPassword = document.getElementById('editPassword').value;
             const newBio = document.getElementById('editBio').value;
             const newGovernorate = document.getElementById('editGovernorate').value;
             const newCenter = document.getElementById('editCenter').value;
+            let newCity = document.getElementById('editCity').value;
+            
             if (!newUsername || !newGovernorate || !newCenter) { showMessage('جميع الحقول مطلوبة', true); return; }
+            
+            if (newCity === '__other__') {
+                const newCityName = document.getElementById('newCityInputEdit').value.trim();
+                if (!newCityName) { showMessage('الرجاء إدخال اسم المدينة/القرية الجديدة', true); return; }
+                const saved = await saveNewCity(newGovernorate, newCenter, newCityName);
+                if (saved) {
+                    newCity = newCityName;
+                    showMessage('تم إضافة المدينة/القرية بنجاح! ستظهر للمستخدمين الآخرين');
+                } else {
+                    showMessage('فشل في حفظ المدينة/القرية الجديدة', true);
+                    return;
+                }
+            } else if (!newCity) {
+                showMessage('الرجاء اختيار المدينة/القرية', true); return;
+            }
+            
             if (newUsername !== currentUser.username) {
                 const check = await getUserData(newUsername);
                 if (check) { showMessage('اسم المستخدم موجود', true); return; }
@@ -712,7 +868,14 @@
                 await db.ref('users/' + currentUser.username).remove();
                 currentUser.username = newUsername;
             }
-            const updates = { bio: newBio, governorate: newGovernorate, center: newCenter };
+            
+            const updates = { 
+                bio: newBio, 
+                governorate: newGovernorate, 
+                center: newCenter, 
+                city: newCity,
+                governorate_center: `${newGovernorate}_${newCenter}`
+            };
             if (newPassword) updates.password = newPassword;
             if (currentUser.type === 'pharmacy') {
                 const newPharmacyName = document.getElementById('editPharmacyName').value.trim();
@@ -722,13 +885,18 @@
                 updates.whatsappNumber = document.getElementById('editWhatsappNumber').value;
                 updates.whatsapp = updates.whatsappCode + updates.whatsappNumber;
             }
+            
             await db.ref('users/' + currentUser.username).update(updates);
             Object.assign(currentUser, updates);
             updateUI();
             showMessage('تم حفظ التغييرات!');
             renderProfile();
         };
-        document.getElementById('deleteAccountBtn').onclick = () => showConfirm('حذف الحساب', 'هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء', async () => { await db.ref('users/' + currentUser.username).remove(); await logout(); });
+        
+        document.getElementById('deleteAccountBtn').onclick = () => showConfirm('حذف الحساب', 'هل أنت متأكد؟ لا يمكن التراجع عن هذا الإجراء', async () => { 
+            await db.ref('users/' + currentUser.username).remove(); 
+            await logout(); 
+        });
     }
 
     function openAvatarModal() {
@@ -820,7 +988,7 @@
         
         for (let r of pending) {
             const client = await getUserData(r.clientId);
-            html += `<div class="request-item"><div class="request-header"><div class="request-client-avatar" onclick="viewClientProfile('${r.clientId}')">${client?.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div><div><span class="client-name" onclick="viewClientProfile('${r.clientId}')">${client?.username || r.clientId}</span><div class="location-badge" style="margin-top: 4px;">${client?.center || ''} - ${client?.governorate || ''}</div></div></div><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>العنوان:</strong> ${r.address}</p><p><strong>هاتف المريض:</strong> ${r.clientPhone} <button class="call-btn" onclick="window.location.href='tel:${r.clientPhone}'"><i class="fas fa-phone"></i> اتصل</button></p>${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="window.open(this.src)"></div>` : ''}${r.prescriptionNotes ? `<div class="prescription-container"><strong>ملاحظات إضافية:</strong><p>${r.prescriptionNotes}</p></div>` : ''}<div class="flex-buttons"><button id="accept_${r.id}" class="accept-btn"><i class="fas fa-check"></i> قبول الطلب</button><button id="reject_${r.id}" class="reject-btn"><i class="fas fa-times"></i> رفض الطلب</button></div></div>`;
+            html += `<div class="request-item"><div class="request-header"><div class="request-client-avatar" onclick="viewClientProfile('${r.clientId}')">${client?.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div><div><span class="client-name" onclick="viewClientProfile('${r.clientId}')">${client?.username || r.clientId}</span><div class="location-badge" style="margin-top: 4px;">${client?.city || ''} - ${client?.center || ''}</div></div></div><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>العنوان:</strong> ${r.address}</p><p><strong>هاتف المريض:</strong> ${r.clientPhone} <button class="call-btn" onclick="window.location.href='tel:${r.clientPhone}'"><i class="fas fa-phone"></i> اتصل</button></p>${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="window.open(this.src)"></div>` : ''}${r.prescriptionNotes ? `<div class="prescription-container"><strong>ملاحظات إضافية:</strong><p>${r.prescriptionNotes}</p></div>` : ''}<div class="flex-buttons"><button id="accept_${r.id}" class="accept-btn"><i class="fas fa-check"></i> قبول الطلب</button><button id="reject_${r.id}" class="reject-btn"><i class="fas fa-times"></i> رفض الطلب</button></div></div>`;
         }
         
         for (let r of accepted) {
@@ -846,10 +1014,22 @@
         container.innerHTML = html;
         
         for (let r of pending) {
-            document.getElementById(`accept_${r.id}`)?.addEventListener('click', () => showConfirm('قبول الطلب', 'هل توافق على قبول هذا الطلب؟', async () => { await db.ref('requests/' + r.id).update({ status: 'accepted' }); showMessage('تم قبول الطلب بنجاح!'); renderPharmacyRequests(); updateNotificationCount(); }));
+            document.getElementById(`accept_${r.id}`)?.addEventListener('click', () => showConfirm('قبول الطلب', 'هل توافق على قبول هذا الطلب؟', async () => { 
+                await db.ref('requests/' + r.id).update({ status: 'accepted' }); 
+                showMessage('تم قبول الطلب بنجاح!'); 
+                renderPharmacyRequests(); 
+                updateNotificationCount(); 
+            }));
             document.getElementById(`reject_${r.id}`)?.addEventListener('click', () => openRejectModal(r.id));
         }
-        for (let r of accepted) document.getElementById(`complete_${r.id}`)?.addEventListener('click', () => showConfirm('إتمام الخدمة', 'هل تم تسليم الدواء للمريض؟', async () => { await db.ref('requests/' + r.id).update({ status: 'completed', completedAt: Date.now() }); showMessage('تم تسليم الدواء بنجاح!'); renderPharmacyRequests(); updateNotificationCount(); }));
+        for (let r of accepted) {
+            document.getElementById(`complete_${r.id}`)?.addEventListener('click', () => showConfirm('إتمام الخدمة', 'هل تم تسليم الدواء للمريض؟', async () => { 
+                await db.ref('requests/' + r.id).update({ status: 'completed', completedAt: Date.now() }); 
+                showMessage('تم تسليم الدواء بنجاح!'); 
+                renderPharmacyRequests(); 
+                updateNotificationCount(); 
+            }));
+        }
     }
 
     async function renderPharmacyHome() {
@@ -867,7 +1047,7 @@
         
         document.getElementById('appContent').innerHTML = `
             <div class="container">
-                <div style="background: rgba(255,255,255,0.9); border-radius: 15px; padding: 1rem; margin-bottom: 1rem; text-align: center;"><h3><i class="fas fa-map-marker-alt"></i> موقع الصيدلية</h3><p><strong>المحافظة:</strong> ${currentUser.governorate || 'غير محدد'} | <strong>المركز:</strong> ${currentUser.center || 'غير محدد'}</p></div>
+                <div style="background: rgba(255,255,255,0.9); border-radius: 15px; padding: 1rem; margin-bottom: 1rem; text-align: center;"><h3><i class="fas fa-map-marker-alt"></i> موقع الصيدلية</h3><p><strong>المحافظة:</strong> ${currentUser.governorate || 'غير محدد'} | <strong>المركز:</strong> ${currentUser.center || 'غير محدد'} | <strong>المدينة/القرية:</strong> ${currentUser.city || 'غير محدد'}</p></div>
                 <h2 style="color: white;"><i class="fas fa-chart-line"></i> لوحة التحكم والإحصائيات</h2>
                 <div class="cards-grid">
                     <div class="card"><div class="card-avatar">${currentUser.avatar ? `<img src="${currentUser.avatar}">` : '<i class="fas fa-star"></i>'}</div><h3>التقييم العام</h3><p style="font-size:1.5rem;">⭐ ${currentUser.avgRating ? currentUser.avgRating.toFixed(1) : 'لا يوجد'}</p></div>
@@ -969,16 +1149,21 @@
     function openSidebar() { if (currentUser) { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); } }
     window.goToHome = () => { renderPage(); closeSidebar(); };
     
-    document.getElementById('menuBtn').onclick = openSidebar;
-    document.getElementById('closeSidebar').onclick = closeSidebar;
-    document.getElementById('overlay').onclick = closeSidebar;
-    document.getElementById('notificationBell').onclick = () => { closeSidebar(); if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
-    document.getElementById('sideHome').onclick = (e) => { e.preventDefault(); closeSidebar(); renderPage(); };
-    document.getElementById('sideProfile').onclick = (e) => { e.preventDefault(); closeSidebar(); renderProfile(); };
-    document.getElementById('sideRequests').onclick = (e) => { e.preventDefault(); closeSidebar(); if (currentUser?.type === 'client') renderClientRequests(); else if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
-    document.getElementById('sideLogout').onclick = (e) => { e.preventDefault(); closeSidebar(); logout(); };
-    
-    showAuthScreen();
+    // التهيئة
+    (async function() {
+        await initLocationsData();
+        
+        document.getElementById('menuBtn').onclick = openSidebar;
+        document.getElementById('closeSidebar').onclick = closeSidebar;
+        document.getElementById('overlay').onclick = closeSidebar;
+        document.getElementById('notificationBell').onclick = () => { closeSidebar(); if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
+        document.getElementById('sideHome').onclick = (e) => { e.preventDefault(); closeSidebar(); renderPage(); };
+        document.getElementById('sideProfile').onclick = (e) => { e.preventDefault(); closeSidebar(); renderProfile(); };
+        document.getElementById('sideRequests').onclick = (e) => { e.preventDefault(); closeSidebar(); if (currentUser?.type === 'client') renderClientRequests(); else if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
+        document.getElementById('sideLogout').onclick = (e) => { e.preventDefault(); closeSidebar(); logout(); };
+        
+        showAuthScreen();
+    })();
 </script>
 </body>
-  </html>
+    </html>
