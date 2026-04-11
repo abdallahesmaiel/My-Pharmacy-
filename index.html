@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        /* نفس CSS الأصلي بالكامل - لم يتم تغييره */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: linear-gradient(135deg, #0f2b3d 0%, #1b8c5e 50%, #0f2b3d 100%); min-height: 100vh; }
         .navbar { background: rgba(26, 37, 47, 0.95); backdrop-filter: blur(10px); color: white; padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
@@ -74,7 +73,7 @@
         .image-preview { width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 1rem; overflow: hidden; border: 3px solid #1abc9c; }
         .image-preview img { width: 100%; height: 100%; object-fit: cover; }
         .file-input { display: none; }
-        .upload-btn { background: linear-gradient(135deg, #3498db, #2980b9); padding: 10px 20px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 10px 0; }
+        .upload-btn { background: linear-gradient(135deg, #3498db, #2980b9); padding: 10px 20px; border-radius: 30px; cursor: pointer; display: inline-block; margin: 10px 0; color: white; }
         .sweet-message { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 20px; padding: 1.5rem 2rem; text-align: center; z-index: 1300; animation: sweetFadeIn 0.3s ease; box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
         @keyframes sweetFadeIn { from { opacity: 0; transform: translate(-50%, -50%) scale(0.9); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
         .flex-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
@@ -95,7 +94,7 @@
         .remember-me { display: flex; align-items: center; justify-content: flex-end; margin: 0.8rem 0 1.2rem; gap: 8px; cursor: pointer; }
         .remember-me input { width: 18px; height: 18px; cursor: pointer; margin: 0; }
         .remember-me label { color: #2c3e50; cursor: pointer; font-size: 0.9rem; font-weight: 500; }
-        .prescription-img { max-width: 100%; border-radius: 10px; margin-top: 8px; border: 1px solid #ddd; cursor: pointer; }
+        .prescription-img { max-width: 100%; max-height: 200px; border-radius: 10px; margin-top: 8px; border: 1px solid #ddd; cursor: pointer; transition: all 0.3s ease; object-fit: contain; }
         .prescription-container { background: #f1f9f5; padding: 10px; border-radius: 10px; margin-top: 10px; border-right: 3px solid #1abc9c; }
         .time-remaining { font-size: 0.7rem; color: #7f8c8d; margin-top: 8px; padding: 4px 8px; background: #ecf0f1; border-radius: 8px; display: inline-block; }
         .comments-container { max-height: 400px; overflow-y: auto; margin-bottom: 1rem; }
@@ -115,9 +114,54 @@
         .request-header { display: flex; align-items: center; gap: 15px; margin-bottom: 10px; }
         .client-name { font-weight: bold; font-size: 1.1rem; cursor: pointer; color: #2c3e50; transition: 0.3s; }
         .client-name:hover { color: #1abc9c; }
-        .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 0.8s ease infinite; margin-right: 8px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 768px) { .profile-header { flex-direction: column; text-align: center; } .cards-grid { gap: 1rem; } .container { padding: 0.8rem; } }
+        
+        /* طبقة تكبير الصورة */
+        .image-zoom-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            cursor: zoom-out;
+        }
+        .image-zoom-overlay img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+        .image-zoom-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.5);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+        .image-zoom-close:hover {
+            background: rgba(255, 0, 0, 0.7);
+            transform: scale(1.1);
+        }
+        @media (max-width: 768px) { 
+            .profile-header { flex-direction: column; text-align: center; } 
+            .cards-grid { gap: 1rem; } 
+            .container { padding: 0.8rem; }
+            .image-zoom-close { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 24px; }
+        }
     </style>
 </head>
 <body>
@@ -148,6 +192,12 @@
 <div class="overlay" id="overlay"></div>
 <div id="appContent"></div>
 
+<!-- طبقة تكبير الصورة -->
+<div id="imageZoomOverlay" class="image-zoom-overlay" onclick="closeImageZoom()">
+    <span class="image-zoom-close" onclick="closeImageZoom()">&times;</span>
+    <img id="zoomedImage" src="" alt="صورة مكبرة">
+</div>
+
 <script>
     const firebaseConfig = {
         apiKey: "AIzaSyCdeHmlFnIJ2e9kQvXZ8XsF1yFOFlSqXU0",
@@ -173,7 +223,6 @@
         { code: "+974", country: "🇶🇦 قطر", name: "قطر" }, { code: "+90", country: "🇹🇷 تركيا", name: "تركيا" }
     ];
 
-    // البيانات الافتراضية للمحافظات والمراكز
     const defaultGovernorates = {
         "القاهرة": ["15 مايو", "الأزبكية", "البساتين", "التبين", "الزاوية الحمراء", "الزيتون", "الساحل", "السلام", "الشرابية", "المطرية", "المعادي", "المعصرة", "المقطم", "المنيل", "الوايلي", "باب الشعرية", "بولاق", "حدائق القبة", "حلوان", "دار السلام", "شبرا", "طرة", "عابدين", "عين شمس", "مدينة نصر", "مصر الجديدة", "مصر القديمة", "منشأة ناصر", "وسط القاهرة"],
         "الجيزة": ["أبو النمرس", "أوسيم", "البدرشين", "الحوامدية", "الدقي", "الوراق", "إمبابة", "بولاق الدكرور", "كرداسة", "العجوزة", "المهندسين", "الهرم", "فيصل", "الشيخ زايد", "السادس من أكتوبر", "حدائق أكتوبر", "الواحات البحرية", "العياط", "الصف", "أطفيح"],
@@ -203,9 +252,28 @@
         "البحر الأحمر": ["الغردقة", "رأس غارب", "سفاجا", "القصير", "مرسى علم", "الشلاتين", "حلايب"]
     };
 
+    // دوال تكبير وتصغير الصورة
+    function zoomImage(imgElement) {
+        const overlay = document.getElementById('imageZoomOverlay');
+        const zoomedImg = document.getElementById('zoomedImage');
+        zoomedImg.src = imgElement.src;
+        overlay.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageZoom() {
+        const overlay = document.getElementById('imageZoomOverlay');
+        overlay.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeImageZoom();
+        }
+    });
+
     // ========== دوال Firebase للمدن والقرى ==========
-    
-    // تهيئة البيانات الافتراضية في Firebase إذا لم تكن موجودة
     async function initLocationsData() {
         try {
             const snap = await db.ref('locations/cities').once('value');
@@ -226,7 +294,6 @@
         }
     }
 
-    // حفظ مدينة/قرية جديدة في Firebase
     async function saveNewCity(governorate, center, cityName) {
         if (!governorate || !center || !cityName) return false;
         try {
@@ -248,7 +315,6 @@
         }
     }
 
-    // جلب المدن لمركز معين من Firebase
     async function getCitiesFromFirebase(governorate, center) {
         if (!governorate || !center) return [];
         try {
@@ -260,7 +326,6 @@
         }
     }
 
-    // تحديث قائمة المدن في القائمة المنسدلة
     async function updateCityOptions(governorateSelectId, centerSelectId, citySelectId, newCityContainerId, selectedCity = '') {
         const governorate = document.getElementById(governorateSelectId)?.value;
         const center = document.getElementById(centerSelectId)?.value;
@@ -287,7 +352,6 @@
         citySelect.disabled = false;
     }
 
-    // ========== دوال مساعدة ==========
     function showMessage(message, isError = false) {
         const existing = document.querySelector('.sweet-message');
         if (existing) existing.remove();
@@ -313,7 +377,6 @@
         window.open(`https://wa.me/${number}`, '_blank');
     }
 
-    // تحديث قائمة المراكز (من البيانات المحلية الافتراضية)
     function updateCenterOptions(governorateSelectId, centerSelectId, selectedCenter = '') {
         const governorate = document.getElementById(governorateSelectId)?.value;
         const centerSelect = document.getElementById(centerSelectId);
@@ -338,7 +401,6 @@
     }
 
     async function getAllPharmaciesByCenter(center, city = '') {
-        // جلب الصيدليات حسب المركز والمدينة
         const snap = await db.ref('users')
             .orderByChild('center')
             .equalTo(center)
@@ -348,7 +410,6 @@
         snap.forEach(child => {
             const user = child.val();
             if (user.type === 'pharmacy') {
-                // إذا تم تحديد مدينة، نفلتر حسب المدينة أيضاً
                 if (!city || user.city === city) {
                     pharmacies.push({ username: child.key, ...user });
                 }
@@ -403,6 +464,11 @@
         cleanupInterval = setInterval(async () => {
             if (currentUser) {
                 await cleanupOldRequests();
+                const currentView = document.querySelector('#reqList');
+                if (currentView) {
+                    if (currentUser.type === 'client') renderClientRequests();
+                    else if (currentUser.type === 'pharmacy') renderPharmacyRequests();
+                }
             }
         }, 60000);
     }
@@ -412,52 +478,19 @@
         if (!client) { showMessage('المستخدم غير موجود', true); return; }
         const displayName = client.type === 'pharmacy' ? (client.pharmacyName || client.username) : client.username;
         
-        const allPharmaciesSnap = await db.ref('users').orderByChild('type').equalTo('pharmacy').once('value');
-        const userComments = [];
-        allPharmaciesSnap.forEach(pharmacySnap => {
-            const pharmacy = pharmacySnap.val();
-            if (pharmacy.comments) {
-                pharmacy.comments.forEach(comment => {
-                    if (comment.username === clientId) {
-                        userComments.push({
-                            pharmacyName: pharmacy.pharmacyName || pharmacySnap.key,
-                            rating: comment.rating,
-                            comment: comment.comment,
-                            date: comment.date
-                        });
-                    }
-                });
-            }
-        });
-        userComments.sort((a, b) => new Date(b.date) - new Date(a.date));
-        
         document.getElementById('appContent').innerHTML = `
             <div class="container">
-                <button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
+                <button class="back-button" onclick="renderPharmacyRequests()"><i class="fas fa-arrow-right"></i> رجوع للطلبات</button>
                 <div class="profile-info">
                     <div class="profile-header">
                         <div class="profile-avatar">${client.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div>
-                        <div><h2>${displayName}</h2><p>${client.type === 'client' ? '📋 مريض' : '💊 صيدلية'}</p><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${client.city || ''} - ${client.center || ''}</div></div>
+                        <div><h2>${displayName}</h2><div class="location-badge"><i class="fas fa-map-marker-alt"></i> ${client.city || ''} - ${client.center || ''}</div></div>
                     </div>
-                    <h3><i class="fas fa-info-circle"></i> معلومات</h3>
-                    <p>${client.bio || 'لا توجد معلومات'}</p>
-                    ${client.type === 'pharmacy' ? `<h3>معلومات التواصل</h3><p><i class="fas fa-phone"></i> ${client.phone || 'غير متاح'}</p><p><i class="fab fa-whatsapp"></i> ${client.whatsapp || 'غير متاح'}</p>` : ''}
-                    <h3 style="margin-top: 1.5rem;"><i class="fas fa-star"></i> تقييم المستخدم</h3>
-                    <p style="font-size: 1.5rem; color: #f39c12;">⭐ ${client.avgRating ? client.avgRating.toFixed(1) : 'لا يوجد تقييمات'}</p>
-                    <h3 style="margin-top: 1.5rem;"><i class="fas fa-comments"></i> تعليقاته على الصيدليات</h3>
-                    <div class="comments-container">
-                        ${userComments.length === 0 ? '<p style="text-align: center; padding: 1rem;">لا توجد تعليقات من هذا المستخدم بعد</p>' : 
-                            userComments.map(c => `
-                                <div class="comment-item">
-                                    <div class="comment-header">
-                                        <span class="comment-user"><i class="fas fa-prescription-bottle"></i> الصيدلية: ${c.pharmacyName}</span>
-                                        <span class="comment-rating">${'⭐'.repeat(c.rating)} (${c.rating})</span>
-                                        <span class="comment-date">${new Date(c.date).toLocaleDateString('ar')}</span>
-                                    </div>
-                                    <div class="comment-text">${c.comment || 'لا يوجد تعليق'}</div>
-                                </div>
-                            `).join('')
-                        }
+                    <h3><i class="fas fa-info-circle"></i> معلومات التواصل</h3>
+                    <p><i class="fas fa-phone"></i> ${client.phone || 'غير متاح'}</p>
+                    <div class="flex-buttons">
+                        <button class="call-btn" onclick="window.location.href='tel:${client.phone}'"><i class="fas fa-phone"></i> اتصال</button>
+                        <button class="call-btn" onclick="openWhatsApp('${client.phone}')"><i class="fab fa-whatsapp"></i> واتساب</button>
                     </div>
                 </div>
             </div>`;
@@ -625,7 +658,6 @@
                 this.classList.toggle('fa-eye-slash');
             });
             
-            // ربط الأحداث
             document.getElementById('regGovernorate').addEventListener('change', function() {
                 updateCenterOptions('regGovernorate', 'regCenter');
                 document.getElementById('regCity').innerHTML = '<option value="">اختر المركز أولاً</option>';
@@ -807,7 +839,6 @@
                 </div>
             </div>`;
         
-        // تحميل المراكز والمدن الحالية
         if (currentUser.governorate) {
             updateCenterOptions('editGovernorate', 'editCenter', currentUser.center);
             if (currentUser.center) {
@@ -815,7 +846,6 @@
             }
         }
         
-        // ربط الأحداث
         document.getElementById('editGovernorate').addEventListener('change', function() {
             updateCenterOptions('editGovernorate', 'editCenter');
             document.getElementById('editCity').innerHTML = '<option value="">اختر المركز أولاً</option>';
@@ -945,22 +975,22 @@
         
         let html = '';
         
-        if (pending.length) html += '<h3 class="section-title">⏳ طلبات قيد الانتظار</h3>' + pending.map(r => `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>العنوان: ${r.address}</p><p>الحالة: في انتظار موافقة الصيدلية</p></div>`).join('');
+        if (pending.length) html += '<h3 class="section-title">⏳ طلبات قيد الانتظار</h3>' + pending.map(r => `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>العنوان: ${r.address}</p><p>الحالة: في انتظار موافقة الصيدلية</p>${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="zoomImage(this)"></div>` : ''}</div>`).join('');
         
-        if (accepted.length) html += '<h3 class="section-title">✅ طلبات قيد التجهيز</h3>' + accepted.map(r => `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>العنوان: ${r.address}</p><p>الحالة: جاري تجهيز الطلب</p></div>`).join('');
+        if (accepted.length) html += '<h3 class="section-title">✅ طلبات قيد التجهيز</h3>' + accepted.map(r => `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>العنوان: ${r.address}</p><p>الحالة: جاري تجهيز الطلب</p>${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="zoomImage(this)"></div>` : ''}</div>`).join('');
         
         if (completed.length) {
             html += '<h3 class="section-title">⭐ طلبات مكتملة - قيد التقييم</h3>';
             for (let r of completed) {
                 const timeRemaining = Math.ceil((twentyFourHours - (now - r.completedAt)) / (60 * 60 * 1000));
-                html += `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>✅ تم تسليم الدواء بنجاح</p><div class="time-remaining">متاح للتقييم لمدة ${timeRemaining} ساعة</div><button id="rate_${r.id}" class="accept-btn">⭐ تقييم الخدمة</button></div>`;
+                html += `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>✅ تم تسليم الدواء بنجاح</p><div class="time-remaining">متاح للتقييم لمدة ${timeRemaining} ساعة</div>${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="zoomImage(this)"></div>` : ''}<button id="rate_${r.id}" class="accept-btn">⭐ تقييم الخدمة</button></div>`;
             }
         }
         
         if (rejected.length) {
             html += '<h3 class="section-title">❌ طلبات مرفوضة</h3>';
             for (let r of rejected) {
-                html += `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>❌ تم رفض الطلب</p>${r.rejectReason ? `<div style="margin-top: 8px;"><i class="fas fa-comment"></i> سبب الرفض: ${r.rejectReason}</div>` : ''}</div>`;
+                html += `<div class="request-item"><p><strong>الصيدلية: ${r.pharmacyName}</strong></p><p>الدواء: ${r.medicineName}</p><p>❌ تم رفض الطلب</p>${r.rejectReason ? `<div style="margin-top: 8px;"><i class="fas fa-comment"></i> سبب الرفض: ${r.rejectReason}</div>` : ''}${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="zoomImage(this)"></div>` : ''}</div>`;
             }
         }
         
@@ -988,18 +1018,44 @@
         
         for (let r of pending) {
             const client = await getUserData(r.clientId);
-            html += `<div class="request-item"><div class="request-header"><div class="request-client-avatar" onclick="viewClientProfile('${r.clientId}')">${client?.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div><div><span class="client-name" onclick="viewClientProfile('${r.clientId}')">${client?.username || r.clientId}</span><div class="location-badge" style="margin-top: 4px;">${client?.city || ''} - ${client?.center || ''}</div></div></div><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>العنوان:</strong> ${r.address}</p><p><strong>هاتف المريض:</strong> ${r.clientPhone} <button class="call-btn" onclick="window.location.href='tel:${r.clientPhone}'"><i class="fas fa-phone"></i> اتصل</button></p>${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="window.open(this.src)"></div>` : ''}${r.prescriptionNotes ? `<div class="prescription-container"><strong>ملاحظات إضافية:</strong><p>${r.prescriptionNotes}</p></div>` : ''}<div class="flex-buttons"><button id="accept_${r.id}" class="accept-btn"><i class="fas fa-check"></i> قبول الطلب</button><button id="reject_${r.id}" class="reject-btn"><i class="fas fa-times"></i> رفض الطلب</button></div></div>`;
+            html += `<div class="request-item">
+                <div class="request-header">
+                    <div class="request-client-avatar" onclick="viewClientProfile('${r.clientId}')">${client?.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div>
+                    <div><span class="client-name" onclick="viewClientProfile('${r.clientId}')">${client?.username || r.clientId}</span><div class="location-badge" style="margin-top: 4px;">${client?.city || ''} - ${client?.center || ''}</div></div>
+                </div>
+                <p><strong>الدواء:</strong> ${r.medicineName}</p>
+                <p><strong>العنوان:</strong> ${r.address}</p>
+                <p><strong>هاتف المريض:</strong> ${r.clientPhone} <button class="call-btn" onclick="window.location.href='tel:${r.clientPhone}'"><i class="fas fa-phone"></i> اتصال</button> <button class="call-btn" onclick="openWhatsApp('${r.clientPhone}')"><i class="fab fa-whatsapp"></i> واتساب</button></p>
+                ${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="zoomImage(this)"></div>` : ''}
+                ${r.prescriptionNotes ? `<div class="prescription-container"><strong>ملاحظات:</strong><p>${r.prescriptionNotes}</p></div>` : ''}
+                <div class="flex-buttons">
+                    <button id="accept_${r.id}" class="accept-btn"><i class="fas fa-check"></i> قبول الطلب</button>
+                    <button id="reject_${r.id}" class="reject-btn"><i class="fas fa-times"></i> رفض الطلب</button>
+                </div>
+            </div>`;
         }
         
         for (let r of accepted) {
-            html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientId}</p><p><strong>العنوان:</strong> ${r.address}</p><button id="complete_${r.id}" class="accept-btn"><i class="fas fa-check-double"></i> تم تسليم الدواء</button></div>`;
+            const client = await getUserData(r.clientId);
+            html += `<div class="request-item">
+                <div class="request-header">
+                    <div class="request-client-avatar" onclick="viewClientProfile('${r.clientId}')">${client?.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div>
+                    <div><span class="client-name" onclick="viewClientProfile('${r.clientId}')">${client?.username || r.clientId}</span><div class="location-badge" style="margin-top: 4px;">${client?.city || ''} - ${client?.center || ''}</div></div>
+                </div>
+                <p><strong>الدواء:</strong> ${r.medicineName}</p>
+                <p><strong>العنوان:</strong> ${r.address}</p>
+                <p><strong>هاتف المريض:</strong> ${r.clientPhone} <button class="call-btn" onclick="window.location.href='tel:${r.clientPhone}'"><i class="fas fa-phone"></i> اتصال</button> <button class="call-btn" onclick="openWhatsApp('${r.clientPhone}')"><i class="fab fa-whatsapp"></i> واتساب</button></p>
+                ${r.prescriptionImage ? `<div class="prescription-container"><strong>الروشتة:</strong><br><img src="${r.prescriptionImage}" class="prescription-img" onclick="zoomImage(this)"></div>` : ''}
+                ${r.prescriptionNotes ? `<div class="prescription-container"><strong>ملاحظات:</strong><p>${r.prescriptionNotes}</p></div>` : ''}
+                <button id="complete_${r.id}" class="accept-btn"><i class="fas fa-check-double"></i> تم تسليم الدواء</button>
+            </div>`;
         }
         
         if (completed.length) {
             html += '<h3 class="section-title" style="color: #27ae60;">✅ طلبات مكتملة (سيتم حذفها تلقائياً)</h3>';
             for (let r of completed) {
                 const timeRemaining = Math.ceil((fiveMinutes - (now - r.completedAt)) / 60000);
-                html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientId}</p><p>✅ تم تسليم الدواء</p><div class="time-remaining">سيتم الحذف بعد ${timeRemaining} دقيقة</div></div>`;
+                html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientName || r.clientId}</p><p>✅ تم تسليم الدواء</p><div class="time-remaining">سيتم الحذف بعد ${timeRemaining} دقيقة</div></div>`;
             }
         }
         
@@ -1007,7 +1063,7 @@
             html += '<h3 class="section-title" style="color: #e74c3c;">❌ طلبات مرفوضة (سيتم حذفها تلقائياً)</h3>';
             for (let r of rejected) {
                 const timeRemaining = Math.ceil((fiveMinutes - (now - r.rejectedAt)) / 60000);
-                html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientId}</p><p>❌ تم رفض الطلب</p>${r.rejectReason ? `<div style="margin-top: 8px;"><i class="fas fa-comment"></i> السبب: ${r.rejectReason}</div>` : ''}<div class="time-remaining">سيتم الحذف بعد ${timeRemaining} دقيقة</div></div>`;
+                html += `<div class="request-item"><p><strong>الدواء:</strong> ${r.medicineName}</p><p><strong>المريض:</strong> ${r.clientName || r.clientId}</p><p>❌ تم رفض الطلب</p>${r.rejectReason ? `<p>السبب: ${r.rejectReason}</p>` : ''}<div class="time-remaining">سيتم الحذف بعد ${timeRemaining} دقيقة</div></div>`;
             }
         }
         
@@ -1015,7 +1071,8 @@
         
         for (let r of pending) {
             document.getElementById(`accept_${r.id}`)?.addEventListener('click', () => showConfirm('قبول الطلب', 'هل توافق على قبول هذا الطلب؟', async () => { 
-                await db.ref('requests/' + r.id).update({ status: 'accepted' }); 
+                const client = await getUserData(r.clientId);
+                await db.ref('requests/' + r.id).update({ status: 'accepted', clientName: client?.username || r.clientId }); 
                 showMessage('تم قبول الطلب بنجاح!'); 
                 renderPharmacyRequests(); 
                 updateNotificationCount(); 
@@ -1065,7 +1122,14 @@
         const modal = document.createElement('div');
         modal.className = 'modal';
         modal.style.display = 'flex';
-        modal.innerHTML = `<div class="modal-content"><h3><i class="fas fa-prescription"></i> طلب دواء</h3><div class="input-group"><i class="fas fa-capsules"></i><input type="text" id="medicineName" placeholder="اسم الدواء"></div><div class="input-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="reqAddress" placeholder="العنوان"></div><div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="reqPhone" placeholder="رقم هاتفك للتواصل"></div><div class="input-group"><label class="upload-btn"><i class="fas fa-camera"></i> رفع روشتة (اختياري) <input type="file" id="prescriptionImage" accept="image/*" class="file-input"></label><div id="imagePreview"></div></div><div class="input-group"><textarea id="prescriptionNotes" placeholder="ملاحظات إضافية (اختياري)..." rows="3"></textarea></div><div class="modal-buttons"><button id="sendReqBtn" class="accept-btn"><i class="fas fa-paper-plane"></i> إرسال الطلب</button><button id="cancelReqBtn" class="reject-btn"><i class="fas fa-times"></i> إلغاء</button></div></div>`;
+        modal.innerHTML = `<div class="modal-content"><h3><i class="fas fa-prescription"></i> طلب دواء</h3>
+            <div class="input-group"><i class="fas fa-capsules"></i><input type="text" id="medicineName" placeholder="اسم الدواء المطلوب"></div>
+            <div class="input-group"><i class="fas fa-map-marker-alt"></i><input type="text" id="reqAddress" placeholder="العنوان بالتفصيل"></div>
+            <div class="input-group"><i class="fas fa-phone"></i><input type="tel" id="reqPhone" placeholder="رقم هاتفك للتواصل"></div>
+            <div class="input-group"><label class="upload-btn"><i class="fas fa-camera"></i> رفع صورة الروشتة <input type="file" id="prescriptionImage" accept="image/*" class="file-input"></label><div id="imagePreview"></div></div>
+            <div class="input-group"><textarea id="prescriptionNotes" placeholder="ملاحظات إضافية (اختياري)..." rows="3"></textarea></div>
+            <div class="modal-buttons"><button id="sendReqBtn" class="accept-btn"><i class="fas fa-paper-plane"></i> إرسال الطلب</button><button id="cancelReqBtn" class="reject-btn"><i class="fas fa-times"></i> إلغاء</button></div>
+        </div>`;
         document.body.appendChild(modal);
         let selectedImage = null;
         document.getElementById('prescriptionImage').onchange = (e) => {
@@ -1136,7 +1200,10 @@
         document.getElementById('confirmRejectBtn').onclick = async () => {
             const reason = document.getElementById('rejectReason').value;
             if (!reason) { showMessage('الرجاء كتابة سبب الرفض', true); return; }
-            await db.ref('requests/' + requestId).update({ status: 'rejected', rejectReason: reason, rejectedAt: Date.now() });
+            const reqSnap = await db.ref('requests/' + requestId).once('value');
+            const reqData = reqSnap.val();
+            const client = await getUserData(reqData.clientId);
+            await db.ref('requests/' + requestId).update({ status: 'rejected', rejectReason: reason, rejectedAt: Date.now(), clientName: client?.username || reqData.clientId });
             showMessage('تم رفض الطلب وإرسال السبب للمريض');
             modal.remove();
             renderPharmacyRequests();
