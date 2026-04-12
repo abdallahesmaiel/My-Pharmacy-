@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        /* نفس الأنماط السابقة مع إضافة أنماط للـ Back Button */
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
         body { background: linear-gradient(135deg, #0f2b3d 0%, #1b8c5e 50%, #0f2b3d 100%); min-height: 100vh; }
         .navbar { background: rgba(26, 37, 47, 0.95); backdrop-filter: blur(10px); color: white; padding: 0.8rem 1.5rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; }
@@ -156,11 +157,41 @@
             background: rgba(255, 0, 0, 0.7);
             transform: scale(1.1);
         }
+        
+        /* تحسينات للأجهزة المحمولة */
+        .mobile-back-button {
+            display: none;
+        }
+        
         @media (max-width: 768px) { 
             .profile-header { flex-direction: column; text-align: center; } 
             .cards-grid { gap: 1rem; } 
             .container { padding: 0.8rem; }
             .image-zoom-close { top: 10px; right: 10px; width: 40px; height: 40px; font-size: 24px; }
+            .mobile-back-button {
+                display: block;
+                position: fixed;
+                bottom: 20px;
+                left: 20px;
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #1abc9c, #2ecc71);
+                color: white;
+                border: none;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+                z-index: 1000;
+                cursor: pointer;
+                font-size: 20px;
+                transition: all 0.3s;
+            }
+            .mobile-back-button:hover {
+                transform: scale(1.1);
+                box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            }
+            .mobile-back-button.hidden {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -176,6 +207,11 @@
         <button class="menu-btn" id="menuBtn"><i class="fas fa-bars"></i></button>
     </div>
 </div>
+
+<!-- زر الرجوع العائم للأجهزة المحمولة -->
+<button class="mobile-back-button hidden" id="mobileBackBtn" onclick="handleMobileBack()">
+    <i class="fas fa-arrow-right"></i>
+</button>
 
 <div class="sidebar" id="sidebar">
     <div class="close-sidebar" id="closeSidebar"><i class="fas fa-times"></i></div>
@@ -199,6 +235,7 @@
 </div>
 
 <script>
+    // تكوين Firebase (نفس الإعدادات السابقة)
     const firebaseConfig = {
         apiKey: "AIzaSyCdeHmlFnIJ2e9kQvXZ8XsF1yFOFlSqXU0",
         authDomain: "facebookat-d5f39.firebaseapp.com",
@@ -214,7 +251,154 @@
     let currentUser = null;
     let notificationInterval = null;
     let cleanupInterval = null;
+    
+    // ========== نظام إدارة التاريخ وزر الرجوع ==========
+    const historyStack = [];
+    let isHandlingPopState = false;
+    
+    // دوال إدارة التاريخ
+    function pushHistoryState(state, title, url) {
+        historyStack.push({ state, title, url });
+        history.pushState(state, title, url);
+        updateMobileBackButton();
+    }
+    
+    function replaceHistoryState(state, title, url) {
+        if (historyStack.length > 0) {
+            historyStack[historyStack.length - 1] = { state, title, url };
+        }
+        history.replaceState(state, title, url);
+        updateMobileBackButton();
+    }
+    
+    function goBack() {
+        if (historyStack.length > 1) {
+            historyStack.pop(); // إزالة الصفحة الحالية
+            const previousState = historyStack[historyStack.length - 1];
+            isHandlingPopState = true;
+            history.back();
+            setTimeout(() => {
+                isHandlingPopState = false;
+                if (previousState) {
+                    handleState(previousState.state);
+                }
+            }, 50);
+        } else if (currentUser) {
+            // إذا كان المستخدم مسجل الدخول، ارجع للصفحة الرئيسية
+            renderPage();
+        } else {
+            // إذا لم يكن مسجل، اعرض شاشة تسجيل الدخول
+            showAuthScreen();
+        }
+        updateMobileBackButton();
+    }
+    
+    function handleState(state) {
+        if (!state) {
+            if (currentUser) {
+                renderPage();
+            } else {
+                showAuthScreen();
+            }
+            return;
+        }
+        
+        switch (state.page) {
+            case 'home':
+                renderPage();
+                break;
+            case 'profile':
+                if (currentUser) renderProfile();
+                else showAuthScreen();
+                break;
+            case 'requests':
+                if (currentUser) {
+                    if (currentUser.type === 'client') renderClientRequests();
+                    else if (currentUser.type === 'pharmacy') renderPharmacyRequests();
+                } else showAuthScreen();
+                break;
+            case 'pharmacy-details':
+                if (currentUser && state.pharmacyId) {
+                    viewPharmacy(state.pharmacyId);
+                } else {
+                    renderPage();
+                }
+                break;
+            case 'client-profile':
+                if (currentUser && state.clientId) {
+                    viewClientProfile(state.clientId);
+                } else {
+                    renderPage();
+                }
+                break;
+            default:
+                if (currentUser) renderPage();
+                else showAuthScreen();
+        }
+    }
+    
+    function updateMobileBackButton() {
+        const mobileBackBtn = document.getElementById('mobileBackBtn');
+        if (historyStack.length > 1) {
+            mobileBackBtn.classList.remove('hidden');
+        } else {
+            mobileBackBtn.classList.add('hidden');
+        }
+    }
+    
+    function handleMobileBack() {
+        goBack();
+    }
+    
+    // مستمع لحدث popstate (عند الضغط على زر الرجوع في المتصفح/الهاتف)
+    window.addEventListener('popstate', function(event) {
+        if (isHandlingPopState) {
+            isHandlingPopState = false;
+            return;
+        }
+        
+        // إزالة العنصر الحالي من المكدس
+        if (historyStack.length > 0) {
+            historyStack.pop();
+        }
+        
+        // معالجة الحالة الجديدة
+        if (event.state) {
+            handleState(event.state);
+        } else {
+            // إذا لم توجد حالة، نعود للوضع الافتراضي
+            if (currentUser) {
+                renderPage();
+            } else {
+                showAuthScreen();
+            }
+        }
+        
+        updateMobileBackButton();
+    });
+    
+    // منع الرجوع للخلف عند فتح المودال أو السايدبار
+    function preventBackWhenModalOpen() {
+        const modals = document.querySelectorAll('.modal[style*="display: flex"]');
+        const sidebarOpen = document.getElementById('sidebar').classList.contains('open');
+        const overlay = document.getElementById('imageZoomOverlay');
+        
+        if (modals.length > 0) {
+            // إغلاق آخر مودال مفتوح
+            const lastModal = modals[modals.length - 1];
+            lastModal.remove();
+            return true;
+        } else if (sidebarOpen) {
+            closeSidebar();
+            return true;
+        } else if (overlay.style.display === 'flex') {
+            closeImageZoom();
+            return true;
+        }
+        return false;
+    }
 
+    // ========== دوال Firebase والبيانات ==========
     const countryCodes = [
         { code: "+20", country: "🇪🇬 مصر", name: "مصر" }, { code: "+966", country: "🇸🇦 السعودية", name: "السعودية" },
         { code: "+971", country: "🇦🇪 الإمارات", name: "الإمارات" }, { code: "+962", country: "🇯🇴 الأردن", name: "الأردن" },
@@ -224,6 +408,7 @@
     ];
 
     const defaultGovernorates = {
+      "اختر المحافظة":["اختر المركز"],
         "القاهرة": ["15 مايو", "الأزبكية", "البساتين", "التبين", "الزاوية الحمراء", "الزيتون", "الساحل", "السلام", "الشرابية", "المطرية", "المعادي", "المعصرة", "المقطم", "المنيل", "الوايلي", "باب الشعرية", "بولاق", "حدائق القبة", "حلوان", "دار السلام", "شبرا", "طرة", "عابدين", "عين شمس", "مدينة نصر", "مصر الجديدة", "مصر القديمة", "منشأة ناصر", "وسط القاهرة"],
         "الجيزة": ["أبو النمرس", "أوسيم", "البدرشين", "الحوامدية", "الدقي", "الوراق", "إمبابة", "بولاق الدكرور", "كرداسة", "العجوزة", "المهندسين", "الهرم", "فيصل", "الشيخ زايد", "السادس من أكتوبر", "حدائق أكتوبر", "الواحات البحرية", "العياط", "الصف", "أطفيح"],
         "الإسكندرية": ["الإبراهيمية", "الأزاريطة", "الجمرك", "الحضرة", "الدخيلة", "السيوف", "العامرية", "العطارين", "المنشية", "المنتزه", "المندرة", "المكس", "باب شرق", "برج العرب", "جليم", "رأس التين", "سابا باشا", "سان ستيفانو", "سبورتنج", "سموحة", "شدس", "العصافرة", "العجمي", "بحري", "كرموز", "محرم بك", "محطة الرمل", "ميامي", "فيكتوريا", "أبو قير"],
@@ -240,7 +425,7 @@
         "سوهاج": ["سوهاج", "أخميم", "البلينا", "المراغة", "المنشأة", "دار السلام", "جرجا", "جهينة", "ساقلته", "طما", "طهطا"],
         "قنا": ["قنا", "أبو تشت", "نجع حمادي", "دشنا", "الوقف", "قفط", "نقادة", "فرشوط", "قوص"],
         "الأقصر": ["الأقصر", "الزينية", "البياضية", "القرنة", "أرمنت", "الطود", "إسنا"],
-        "أسوان": ["أسوان", "دراو", "كوم أمبو", "نصر النوبة", "إدفو", "الرديسية", "البصيلية", "السباعية", "أبو سمبل"],
+        "أسوان": ["أسوان", "دراو", "كوم أمبو", "نصر النوبة", "إدفو", "الرديسية","الرمادي", "البصيلية", "السباعية", "أبو سمبل"],
         "دمياط": ["دمياط", "دمياط الجديدة", "رأس البر", "فارسكور", "الزرقا", "كفر سعد", "عزبة البرج"],
         "بورسعيد": ["بورسعيد", "بورفؤاد", "الضواحي", "المناخ", "العرب", "الزهور", "الشرق"],
         "الإسماعيلية": ["الإسماعيلية", "التل الكبير", "القنطرة شرق", "القنطرة غرب", "فايد", "أبو صوير"],
@@ -259,17 +444,32 @@
         zoomedImg.src = imgElement.src;
         overlay.style.display = 'flex';
         document.body.style.overflow = 'hidden';
+        
+        // إضافة حالة للتاريخ لمنع الخروج غير المتوقع
+        pushHistoryState({ page: 'image-zoom' }, 'تكبير الصورة', '#zoom');
     }
 
     function closeImageZoom() {
         const overlay = document.getElementById('imageZoomOverlay');
         overlay.style.display = 'none';
         document.body.style.overflow = '';
+        
+        // إزالة حالة التكبير من التاريخ
+        if (historyStack.length > 0 && historyStack[historyStack.length - 1].state.page === 'image-zoom') {
+            historyStack.pop();
+            history.back();
+        }
     }
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
-            closeImageZoom();
+            // التحقق من وجود عناصر مفتوحة وإغلاقها
+            if (preventBackWhenModalOpen()) {
+                e.preventDefault();
+            } else {
+                // محاولة الرجوع للخلف
+                goBack();
+            }
         }
     });
 
@@ -370,6 +570,15 @@
         document.body.appendChild(modal);
         document.getElementById('confirmYes').onclick = () => { onConfirm(); modal.remove(); };
         document.getElementById('confirmNo').onclick = () => modal.remove();
+        
+        // إضافة مستمع لزر الرجوع لإغلاق المودال
+        const handleBack = (e) => {
+            if (e.key === 'Escape') {
+                modal.remove();
+                document.removeEventListener('keydown', handleBack);
+            }
+        };
+        document.addEventListener('keydown', handleBack);
     }
 
     function openWhatsApp(phoneWithCode) {
@@ -478,9 +687,11 @@
         if (!client) { showMessage('المستخدم غير موجود', true); return; }
         const displayName = client.type === 'pharmacy' ? (client.pharmacyName || client.username) : client.username;
         
+        pushHistoryState({ page: 'client-profile', clientId }, `ملف ${displayName}`, `#client/${clientId}`);
+        
         document.getElementById('appContent').innerHTML = `
             <div class="container">
-                <button class="back-button" onclick="renderPharmacyRequests()"><i class="fas fa-arrow-right"></i> رجوع للطلبات</button>
+                <button class="back-button" onclick="goBack()"><i class="fas fa-arrow-right"></i> رجوع للطلبات</button>
                 <div class="profile-info">
                     <div class="profile-header">
                         <div class="profile-avatar">${client.avatar ? `<img src="${client.avatar}">` : '<i class="fas fa-user-circle"></i>'}</div>
@@ -512,6 +723,11 @@
                     localStorage.removeItem('rememberedPass');
                 }
                 updateUI();
+                
+                // مسح التاريخ والبدء من الصفحة الرئيسية
+                historyStack.length = 0;
+                replaceHistoryState({ page: 'home' }, 'الرئيسية', '#home');
+                
                 renderPage();
                 startNotifications();
                 startCleanupInterval();
@@ -546,6 +762,11 @@
         await db.ref('users/' + username).set(userData);
         currentUser = { username: username, ...userData };
         updateUI();
+        
+        // مسح التاريخ والبدء من الصفحة الرئيسية
+        historyStack.length = 0;
+        replaceHistoryState({ page: 'home' }, 'الرئيسية', '#home');
+        
         renderPage();
         startNotifications();
         startCleanupInterval();
@@ -557,6 +778,7 @@
         if (notificationInterval) clearInterval(notificationInterval);
         if (cleanupInterval) clearInterval(cleanupInterval);
         currentUser = null;
+        historyStack.length = 0;
         updateUI();
         showAuthScreen();
         closeSidebar();
@@ -593,6 +815,9 @@
 
     function showAuthScreen() {
         closeSidebar();
+        historyStack.length = 0;
+        replaceHistoryState({ page: 'auth' }, 'تسجيل الدخول', '#auth');
+        
         document.getElementById('appContent').innerHTML = `
             <div class="auth-wrapper">
                 <div class="auth-card">
@@ -726,9 +951,17 @@
     }
 
     function renderPage() {
-        if (!currentUser) { showAuthScreen(); }
-        else if (currentUser.type === 'client') { renderClientHome(); }
-        else if (currentUser.type === 'pharmacy') { renderPharmacyHome(); }
+        if (!currentUser) { 
+            showAuthScreen(); 
+        }
+        else if (currentUser.type === 'client') { 
+            replaceHistoryState({ page: 'home' }, 'الرئيسية', '#home');
+            renderClientHome(); 
+        }
+        else if (currentUser.type === 'pharmacy') { 
+            replaceHistoryState({ page: 'home' }, 'لوحة التحكم', '#home');
+            renderPharmacyHome(); 
+        }
     }
 
     async function renderClientHome() {
@@ -773,9 +1006,11 @@
         const whatsappDisplay = pharmacy.whatsapp ? `${pharmacy.whatsappCode || ''} ${pharmacy.whatsappNumber || ''}` : pharmacy.whatsapp || pharmacy.phone;
         const pharmacyDisplayName = pharmacy.pharmacyName || pharmacy.username;
         
+        pushHistoryState({ page: 'pharmacy-details', pharmacyId: pharmId }, pharmacyDisplayName, `#pharmacy/${pharmId}`);
+        
         document.getElementById('appContent').innerHTML = `
             <div class="container">
-                <button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
+                <button class="back-button" onclick="goBack()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
                 <div class="profile-info">
                     <div class="profile-header">
                         <div class="profile-avatar">${pharmacy.avatar ? `<img src="${pharmacy.avatar}">` : '<i class="fas fa-hospital-user"></i>'}</div>
@@ -813,12 +1048,14 @@
     };
 
     async function renderProfile() {
+        pushHistoryState({ page: 'profile' }, 'الملف الشخصي', '#profile');
+        
         const countryOptions = countryCodes.map(c => `<option value="${c.code}" ${currentUser.whatsappCode === c.code ? 'selected' : ''}>${c.country} ${c.code}</option>`).join('');
         const governorateOptions = Object.keys(defaultGovernorates).map(g => `<option value="${g}" ${currentUser.governorate === g ? 'selected' : ''}>${g}</option>`).join('');
         
         document.getElementById('appContent').innerHTML = `
             <div class="container">
-                <button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
+                <button class="back-button" onclick="goBack()"><i class="fas fa-arrow-right"></i> رجوع للرئيسية</button>
                 <div class="profile-info">
                     <div class="profile-header"><div class="profile-avatar" id="avatarClick">${currentUser.avatar ? `<img src="${currentUser.avatar}">` : '<i class="fas fa-user-circle"></i>'}<div class="avatar-overlay"><i class="fas fa-camera"></i></div></div><div><h2>${currentUser.type === 'pharmacy' ? (currentUser.pharmacyName || currentUser.username) : currentUser.username}</h2><p>${currentUser.type === 'client' ? 'مريض' : 'صيدلية'}</p></div></div>
                     <div id="profileForm">
@@ -959,9 +1196,11 @@
     }
 
     async function renderClientRequests() {
+        pushHistoryState({ page: 'requests' }, 'طلباتي', '#requests');
+        
         const requests = await getRequestsForUser(currentUser.username, 'client');
         
-        document.getElementById('appContent').innerHTML = `<div class="container"><button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع</button><h2 style="color: white;">طلباتي</h2><div id="reqList" class="profile-info"></div></div>`;
+        document.getElementById('appContent').innerHTML = `<div class="container"><button class="back-button" onclick="goBack()"><i class="fas fa-arrow-right"></i> رجوع</button><h2 style="color: white;">طلباتي</h2><div id="reqList" class="profile-info"></div></div>`;
         const container = document.getElementById('reqList');
         if (requests.length === 0) { container.innerHTML = '<p style="text-align: center;">لا توجد طلبات حالياً</p>'; return; }
         
@@ -1000,9 +1239,11 @@
     }
 
     async function renderPharmacyRequests() {
+        pushHistoryState({ page: 'requests' }, 'الطلبات الواردة', '#requests');
+        
         const requests = await getRequestsForUser(currentUser.username, 'pharmacy');
         
-        document.getElementById('appContent').innerHTML = `<div class="container"><button class="back-button" onclick="renderPage()"><i class="fas fa-arrow-right"></i> رجوع</button><h2 style="color: white;">الطلبات الواردة</h2><div id="reqList" class="profile-info"></div></div>`;
+        document.getElementById('appContent').innerHTML = `<div class="container"><button class="back-button" onclick="goBack()"><i class="fas fa-arrow-right"></i> رجوع</button><h2 style="color: white;">الطلبات الواردة</h2><div id="reqList" class="profile-info"></div></div>`;
         const container = document.getElementById('reqList');
         if (requests.length === 0) { container.innerHTML = '<p style="text-align: center;">لا توجد طلبات حالياً</p>'; return; }
         
@@ -1090,6 +1331,8 @@
     }
 
     async function renderPharmacyHome() {
+        replaceHistoryState({ page: 'home' }, 'لوحة التحكم', '#home');
+        
         const requests = await getRequestsForUser(currentUser.username, 'pharmacy');
         let completed = 0, rejected = 0, pending = 0, accepted = 0;
         
@@ -1212,9 +1455,22 @@
         document.getElementById('cancelRejectBtn').onclick = () => modal.remove();
     }
 
-    function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('overlay').classList.remove('show'); }
-    function openSidebar() { if (currentUser) { document.getElementById('sidebar').classList.add('open'); document.getElementById('overlay').classList.add('show'); } }
-    window.goToHome = () => { renderPage(); closeSidebar(); };
+    function closeSidebar() { 
+        document.getElementById('sidebar').classList.remove('open'); 
+        document.getElementById('overlay').classList.remove('show'); 
+    }
+    
+    function openSidebar() { 
+        if (currentUser) { 
+            document.getElementById('sidebar').classList.add('open'); 
+            document.getElementById('overlay').classList.add('show'); 
+        } 
+    }
+    
+    window.goToHome = () => { 
+        renderPage(); 
+        closeSidebar(); 
+    };
     
     // التهيئة
     (async function() {
@@ -1223,11 +1479,34 @@
         document.getElementById('menuBtn').onclick = openSidebar;
         document.getElementById('closeSidebar').onclick = closeSidebar;
         document.getElementById('overlay').onclick = closeSidebar;
-        document.getElementById('notificationBell').onclick = () => { closeSidebar(); if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
-        document.getElementById('sideHome').onclick = (e) => { e.preventDefault(); closeSidebar(); renderPage(); };
-        document.getElementById('sideProfile').onclick = (e) => { e.preventDefault(); closeSidebar(); renderProfile(); };
-        document.getElementById('sideRequests').onclick = (e) => { e.preventDefault(); closeSidebar(); if (currentUser?.type === 'client') renderClientRequests(); else if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); };
-        document.getElementById('sideLogout').onclick = (e) => { e.preventDefault(); closeSidebar(); logout(); };
+        document.getElementById('notificationBell').onclick = () => { 
+            closeSidebar(); 
+            if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); 
+        };
+        document.getElementById('sideHome').onclick = (e) => { 
+            e.preventDefault(); 
+            closeSidebar(); 
+            renderPage(); 
+        };
+        document.getElementById('sideProfile').onclick = (e) => { 
+            e.preventDefault(); 
+            closeSidebar(); 
+            renderProfile(); 
+        };
+        document.getElementById('sideRequests').onclick = (e) => { 
+            e.preventDefault(); 
+            closeSidebar(); 
+            if (currentUser?.type === 'client') renderClientRequests(); 
+            else if (currentUser?.type === 'pharmacy') renderPharmacyRequests(); 
+        };
+        document.getElementById('sideLogout').onclick = (e) => { 
+            e.preventDefault(); 
+            closeSidebar(); 
+            logout(); 
+        };
+        
+        // إخفاء زر الرجوع المحمول في البداية
+        document.getElementById('mobileBackBtn').classList.add('hidden');
         
         showAuthScreen();
     })();
